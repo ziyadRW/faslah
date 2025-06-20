@@ -1,0 +1,12 @@
+2025/06/20 22:34:11 ✅ Database connected successfully!
+2025/06/20 22:34:11 Server running on http://127.0.0.1:8080
+
+   ____    __
+  / __/___/ /  ___
+ / _// __/ _ \/ _ \
+/___/\__/_//_/\___/ v4.13.4
+High performance, minimalist Go web framework
+https://echo.labstack.com
+____________________________________O/_______
+                                    O\
+⇨ http server started on [::]:8080
