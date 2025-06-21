@@ -5,6 +5,7 @@ import (
 	"github.com/ziyadrw/faslah/config"
 	"github.com/ziyadrw/faslah/internal/base"
 	"github.com/ziyadrw/faslah/internal/middlewares"
+	"github.com/ziyadrw/faslah/internal/migrations"
 	"github.com/ziyadrw/faslah/internal/routes"
 )
 
@@ -16,6 +17,8 @@ func main() {
 
 	config.Connect()
 	db := config.GetDB()
+	migrations.Migrate()
+
 	routes.RegisterAllRoutes(e, db)
 
 	startServer(e)
