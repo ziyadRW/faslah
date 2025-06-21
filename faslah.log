@@ -10,3 +10,4 @@ https://echo.labstack.com
 ____________________________________O/_______
                                     O\
 ⇨ http server started on [::]:8080
+{"time":"2025-06-20T22:53:00.4224747+03:00","id":"DyCLmKzPqlrVnTlwmuxCSRNdTpjkJqZr","remote_ip":"127.0.0.1","host":"localhost:8080","method":"HEAD","uri":"/","user_agent":"Go-http-client/1.1","status":404,"error":"code=404, message=Not Found","latency":29755,"latency_human":"29.755µs","bytes_in":0,"bytes_out":0}
