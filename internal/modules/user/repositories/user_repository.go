@@ -2,6 +2,8 @@ package user
 
 import (
 	"errors"
+	"time"
+
 	"github.com/google/uuid"
 	"github.com/ziyadrw/faslah/internal/base/utils"
 	userModels "github.com/ziyadrw/faslah/internal/modules/user/models"
@@ -64,4 +66,46 @@ func (ur *UserRepository) GetUserByID(id uuid.UUID) (*userModels.User, error) {
 func (ur *UserRepository) VerifyPassword(user *userModels.User, password string) bool {
 	err := bcrypt.CompareHashAndPassword([]byte(user.PasswordHash), []byte(password))
 	return err == nil
+}
+
+// GetWatchHistory retrieves the watch history for a user
+func (ur *UserRepository) GetWatchHistory(userID uuid.UUID) ([]userModels.WatchHistory, error) {
+	var history []userModels.WatchHistory
+
+	result := ur.DB.Where("user_id = ?", userID).Order("last_played_at DESC").Find(&history)
+	if result.Error != nil {
+		return nil, result.Error
+	}
+
+	return history, nil
+}
+
+// UpsertWatchHistory creates or updates a watch history record
+func (ur *UserRepository) UpsertWatchHistory(userID, podcastID uuid.UUID, playbackSecond int) error {
+	now := time.Now()
+
+	var count int64
+	if err := ur.DB.Model(&userModels.WatchHistory{}).
+		Where("user_id = ? AND podcast_id = ?", userID, podcastID).
+		Count(&count).Error; err != nil {
+		return err
+	}
+
+	if count > 0 {
+		return ur.DB.Model(&userModels.WatchHistory{}).
+			Where("user_id = ? AND podcast_id = ?", userID, podcastID).
+			Updates(map[string]interface{}{
+				"playback_second": playbackSecond,
+				"last_played_at":  now,
+				"updated_at":      now,
+			}).Error
+	} else {
+		history := userModels.WatchHistory{
+			UserID:         userID.String(),
+			PodcastID:      podcastID.String(),
+			PlaybackSecond: playbackSecond,
+			LastPlayedAt:   &now,
+		}
+		return ur.DB.Create(&history).Error
+	}
 }
