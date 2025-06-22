@@ -2,15 +2,16 @@ package discovery
 
 import (
 	"github.com/labstack/echo/v4"
-	discoveryHandlers "github.com/ziyadrw/faslah/internal/modules/discovery/handlers"
-	discoveryServices "github.com/ziyadrw/faslah/internal/modules/discovery/services"
-	podcastRepositories "github.com/ziyadrw/faslah/internal/modules/podcast/repositories"
 	"gorm.io/gorm"
+
+	discoveryHandlers "github.com/ziyadrw/faslah/internal/modules/discovery/handlers"
+	discoveryRepositories "github.com/ziyadrw/faslah/internal/modules/discovery/repositories"
+	discoveryServices "github.com/ziyadrw/faslah/internal/modules/discovery/services"
 )
 
 func RegisterRoutes(e *echo.Echo, db *gorm.DB) {
-	podcastRepo := podcastRepositories.NewPodcastRepository(db)
-	discoveryService := discoveryServices.NewDiscoveryService(podcastRepo)
+	discoveryRepo := discoveryRepositories.NewDiscoveryRepository(db)
+	discoveryService := discoveryServices.NewDiscoveryService(discoveryRepo)
 	discoveryHandler := discoveryHandlers.NewDiscoveryHandler(discoveryService)
 
 	discoveryGroup := e.Group("/discovery")
