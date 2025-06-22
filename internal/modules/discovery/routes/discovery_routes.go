@@ -17,4 +17,5 @@ func RegisterRoutes(e *echo.Echo, db *gorm.DB) {
 	discoveryGroup := e.Group("/discovery")
 	discoveryGroup.GET("", discoveryHandler.ListPodcasts)
 	discoveryGroup.GET("/search", discoveryHandler.SearchPodcasts)
+	discoveryGroup.GET("/popular", discoveryHandler.GetPopularPodcasts)
 }
