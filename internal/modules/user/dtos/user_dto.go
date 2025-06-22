@@ -34,3 +34,15 @@ type AuthResponse struct {
 	Token string       `json:"token"`
 	User  UserResponse `json:"user"`
 }
+
+// WatchHistoryResponse represents the response body for watch history
+type WatchHistoryResponse struct {
+	PodcastID      string     `json:"podcast_id"`
+	PlaybackSecond int        `json:"playback_second"`
+	LastPlayedAt   *time.Time `json:"last_played_at"`
+}
+
+// TrackPlayRequest represents the request body for tracking podcast play
+type TrackPlayRequest struct {
+	PlaybackSecond int `json:"playback_second" validate:"required,min=0" message:"ثانية التشغيل مطلوبة ويجب أن تكون قيمة موجبة"`
+}
