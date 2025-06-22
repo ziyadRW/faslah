@@ -377,3 +377,73 @@ func (ps *PodcastService) FetchYouTube(youtubeURL string) base.Response {
 
 	return base.SetData(response, "تم جلب الفيديو بنجاح")
 }
+
+// GetVideoDuration extracts the duration in seconds from a video file using ffmpeg.
+func (ps *PodcastService) GetVideoDuration(fileContent []byte) (int, error) {
+	tempDir := os.TempDir()
+	tempFile := filepath.Join(tempDir, fmt.Sprintf("temp_video_%s.mp4", uuid.New().String()))
+	if err := os.WriteFile(tempFile, fileContent, 0644); err != nil {
+		return 0, fmt.Errorf("failed to write temporary file: %w", err)
+	}
+	defer os.Remove(tempFile)
+
+	cmd := exec.Command("ffmpeg", "-i", tempFile, "-f", "null", "-")
+	var stderr bytes.Buffer
+	cmd.Stderr = &stderr
+
+	err := cmd.Run()
+	output := stderr.String()
+
+	durationStr := extractDuration(output)
+	if durationStr != "" {
+		seconds := convertDurationToSeconds(durationStr)
+		return seconds, nil
+	}
+
+	if err != nil {
+		return 0, fmt.Errorf("failed to extract duration: %w", err)
+	}
+
+	return 0, fmt.Errorf("duration not found in ffmpeg output")
+}
+
+// extractDuration extracts the duration string from ffmpeg output
+func extractDuration(output string) string {
+	durationIndex := strings.Index(output, "Duration: ")
+	if durationIndex == -1 {
+		return ""
+	}
+	durationStr := output[durationIndex+10:]
+	endIndex := strings.Index(durationStr, ",")
+	if endIndex == -1 {
+		return ""
+	}
+
+	return strings.TrimSpace(durationStr[:endIndex])
+}
+
+// convertDurationToSeconds converts a duration string (HH:MM:SS.MS) to seconds
+func convertDurationToSeconds(durationStr string) int {
+	parts := strings.Split(durationStr, ":")
+	if len(parts) != 3 {
+		return 0
+	}
+
+	hours, err := strconv.ParseFloat(parts[0], 64)
+	if err != nil {
+		return 0
+	}
+
+	minutes, err := strconv.ParseFloat(parts[1], 64)
+	if err != nil {
+		return 0
+	}
+
+	seconds, err := strconv.ParseFloat(parts[2], 64)
+	if err != nil {
+		return 0
+	}
+
+	totalSeconds := int(hours*3600 + minutes*60 + seconds)
+	return totalSeconds
+}
