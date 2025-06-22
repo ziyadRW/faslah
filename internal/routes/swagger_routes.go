@@ -11,5 +11,8 @@ func RegisterSwaggerRoutes(e *echo.Echo) {
 	e.GET("/swagger", func(c echo.Context) error {
 		return c.Redirect(http.StatusMovedPermanently, "/swagger/")
 	})
-	e.GET("/swagger/*", echoSwagger.WrapHandler)
+
+	e.GET("/swagger/*", echoSwagger.EchoWrapHandler(func(c *echoSwagger.Config) {
+		c.PersistAuthorization = true
+	}))
 }

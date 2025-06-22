@@ -1,0 +1,698 @@
+basePath: /
+definitions:
+  github_com_ziyadrw_faslah_internal_base.Response:
+    properties:
+      data: {}
+      errors: {}
+      message_description:
+        type: string
+      message_title:
+        type: string
+      message_type:
+        type: string
+    type: object
+  github_com_ziyadrw_faslah_internal_modules_cms_dtos.PodcastResponse:
+    properties:
+      created_at:
+        type: string
+      description:
+        type: string
+      duration_secs:
+        type: integer
+      id:
+        type: string
+      media_url:
+        type: string
+      published_at:
+        type: string
+      source_url:
+        type: string
+      tags:
+        items:
+          type: string
+        type: array
+      title:
+        type: string
+      updated_at:
+        type: string
+      user_id:
+        type: string
+    type: object
+  github_com_ziyadrw_faslah_internal_modules_cms_dtos.UpdateContentRequest:
+    properties:
+      description:
+        type: string
+      duration_secs:
+        type: integer
+      media_url:
+        type: string
+      published_at:
+        type: string
+      source_url:
+        type: string
+      tags:
+        items:
+          type: string
+        type: array
+      title:
+        type: string
+    type: object
+  github_com_ziyadrw_faslah_internal_modules_discovery_dtos.PopularPodcastResponse:
+    properties:
+      description:
+        type: string
+      id:
+        type: string
+      media_url:
+        type: string
+      play_count:
+        type: integer
+      title:
+        type: string
+    type: object
+  github_com_ziyadrw_faslah_internal_modules_user_dtos.AuthResponse:
+    properties:
+      token:
+        type: string
+      user:
+        $ref: '#/definitions/github_com_ziyadrw_faslah_internal_modules_user_dtos.UserResponse'
+    type: object
+  github_com_ziyadrw_faslah_internal_modules_user_dtos.LoginRequest:
+    properties:
+      email:
+        type: string
+      password:
+        type: string
+    required:
+    - email
+    - password
+    type: object
+  github_com_ziyadrw_faslah_internal_modules_user_dtos.SignupRequest:
+    properties:
+      email:
+        type: string
+      name:
+        type: string
+      password:
+        type: string
+      role:
+        allOf:
+        - $ref: '#/definitions/github_com_ziyadrw_faslah_internal_modules_user_enums.Type'
+        enum:
+        - viewer
+        - creator
+    required:
+    - email
+    - name
+    - password
+    type: object
+  github_com_ziyadrw_faslah_internal_modules_user_dtos.TrackPlayRequest:
+    properties:
+      playback_second:
+        minimum: 0
+        type: integer
+    required:
+    - playback_second
+    type: object
+  github_com_ziyadrw_faslah_internal_modules_user_dtos.UserResponse:
+    properties:
+      created_at:
+        type: string
+      email:
+        type: string
+      id:
+        type: string
+      name:
+        type: string
+      role:
+        $ref: '#/definitions/github_com_ziyadrw_faslah_internal_modules_user_enums.Type'
+    type: object
+  github_com_ziyadrw_faslah_internal_modules_user_dtos.WatchHistoryResponse:
+    properties:
+      last_played_at:
+        type: string
+      playback_second:
+        type: integer
+      podcast_id:
+        type: string
+    type: object
+  github_com_ziyadrw_faslah_internal_modules_user_enums.Type:
+    enum:
+    - creator
+    - viewer
+    - admin
+    type: string
+    x-enum-varnames:
+    - TypeCreator
+    - TypeViewer
+    - TypeAdmin
+info:
+  contact:
+    email: zeadAlrouasheed@gmail.com
+    name: فريق دعم فاصلة
+    url: https://github.com/ziyadrw/faslah
+  description: واجهة برمجة التطبيقات لمنصة فاصلة للبودكاست
+  termsOfService: http://swagger.io/terms/
+  title: فاصلة API
+  version: "1.0"
+paths:
+  /cms/create-content:
+    post:
+      consumes:
+      - multipart/form-data
+      - application/json
+      description: إنشاء بودكاست جديد من خلال رفع ملف MP4 مباشرة أو من خلال رابط يوتيوب.
+        يمكنك إما تقديم رابط فيديو يوتيوب وسنقوم بتنزيله واستخراج البيانات الوصفية
+        تلقائيًا، أو يمكنك رفع ملف MP4 مباشرة وتقديم البيانات الوصفية يدويًا. في كلتا
+        الحالتين، سيتم تخزين الفيديو في خدمة Cloudflare R2 الخاصة بنا تحت نطاق media.faslah.net
+        للوصول السريع والآمن.
+      parameters:
+      - description: رابط يوتيوب (مطلوب إذا لم يتم تقديم ملف). سنقوم بتنزيل الفيديو
+          واستخراج العنوان والوصف والوسوم تلقائيًا.
+        in: formData
+        name: source_url
+        type: string
+      - description: ملف MP4 (مطلوب إذا لم يتم تقديم رابط يوتيوب). يجب أن يكون بتنسيق
+          MP4.
+        in: formData
+        name: file
+        type: file
+      - description: العنوان (مطلوب لرفع الملف، اختياري لرابط يوتيوب). إذا قدمت رابط
+          يوتيوب، يمكنك تجاوز العنوان المستخرج تلقائيًا.
+        in: formData
+        name: title
+        type: string
+      - description: الوصف (مطلوب لرفع الملف، اختياري لرابط يوتيوب). إذا قدمت رابط
+          يوتيوب، يمكنك تجاوز الوصف المستخرج تلقائيًا.
+        in: formData
+        name: description
+        type: string
+      - collectionFormat: csv
+        description: الوسوم (مطلوبة لرفع الملف، اختيارية لرابط يوتيوب). قائمة من الكلمات
+          المفتاحية لتسهيل البحث.
+        in: formData
+        items:
+          type: string
+        name: tags
+        type: array
+      - description: تاريخ النشر (اختياري). بتنسيق ISO 8601 (YYYY-MM-DDTHH:MM:SSZ).
+        in: formData
+        name: published_at
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: تم إنشاء البودكاست بنجاح
+          schema:
+            allOf:
+            - $ref: '#/definitions/github_com_ziyadrw_faslah_internal_base.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/github_com_ziyadrw_faslah_internal_modules_cms_dtos.PodcastResponse'
+              type: object
+        "400":
+          description: خطأ في البيانات المدخلة
+          schema:
+            $ref: '#/definitions/github_com_ziyadrw_faslah_internal_base.Response'
+        "401":
+          description: غير مصرح
+          schema:
+            $ref: '#/definitions/github_com_ziyadrw_faslah_internal_base.Response'
+        "500":
+          description: خطأ في الخادم
+          schema:
+            $ref: '#/definitions/github_com_ziyadrw_faslah_internal_base.Response'
+      security:
+      - ApiKeyAuth: []
+      summary: إنشاء بودكاست جديد
+      tags:
+      - إنشاء المحتوى
+  /cms/delete-content/{id}:
+    delete:
+      consumes:
+      - application/json
+      description: حذف بودكاست بواسطة المعرف
+      parameters:
+      - description: معرف البودكاست
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: تم حذف البودكاست بنجاح
+          schema:
+            $ref: '#/definitions/github_com_ziyadrw_faslah_internal_base.Response'
+        "400":
+          description: معرف البودكاست غير صالح
+          schema:
+            $ref: '#/definitions/github_com_ziyadrw_faslah_internal_base.Response'
+        "401":
+          description: غير مصرح
+          schema:
+            $ref: '#/definitions/github_com_ziyadrw_faslah_internal_base.Response'
+        "403":
+          description: ليس لديك الصلاحيات الكافية
+          schema:
+            $ref: '#/definitions/github_com_ziyadrw_faslah_internal_base.Response'
+        "404":
+          description: البودكاست غير موجود
+          schema:
+            $ref: '#/definitions/github_com_ziyadrw_faslah_internal_base.Response'
+        "500":
+          description: خطأ في الخادم
+          schema:
+            $ref: '#/definitions/github_com_ziyadrw_faslah_internal_base.Response'
+      security:
+      - ApiKeyAuth: []
+      summary: حذف محتوى
+      tags:
+      - إدارة المحتوى
+  /cms/my-content:
+    post:
+      consumes:
+      - application/json
+      description: استرجاع جميع البودكاست التي أنشأها المستخدم الحالي
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: تم استرجاع المحتوى الخاص بك بنجاح
+          schema:
+            allOf:
+            - $ref: '#/definitions/github_com_ziyadrw_faslah_internal_base.Response'
+            - properties:
+                data:
+                  items:
+                    $ref: '#/definitions/github_com_ziyadrw_faslah_internal_modules_cms_dtos.PodcastResponse'
+                  type: array
+              type: object
+        "401":
+          description: غير مصرح
+          schema:
+            $ref: '#/definitions/github_com_ziyadrw_faslah_internal_base.Response'
+        "500":
+          description: خطأ في الخادم
+          schema:
+            $ref: '#/definitions/github_com_ziyadrw_faslah_internal_base.Response'
+      security:
+      - ApiKeyAuth: []
+      summary: الحصول على المحتوى الخاص بي
+      tags:
+      - إدارة المحتوى
+  /cms/retreive-content/{id}:
+    get:
+      consumes:
+      - application/json
+      description: استرجاع بودكاست بواسطة المعرف
+      parameters:
+      - description: معرف البودكاست
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: تم استرجاع البودكاست بنجاح
+          schema:
+            allOf:
+            - $ref: '#/definitions/github_com_ziyadrw_faslah_internal_base.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/github_com_ziyadrw_faslah_internal_modules_cms_dtos.PodcastResponse'
+              type: object
+        "400":
+          description: معرف البودكاست غير صالح
+          schema:
+            $ref: '#/definitions/github_com_ziyadrw_faslah_internal_base.Response'
+        "404":
+          description: البودكاست غير موجود
+          schema:
+            $ref: '#/definitions/github_com_ziyadrw_faslah_internal_base.Response'
+        "500":
+          description: خطأ في الخادم
+          schema:
+            $ref: '#/definitions/github_com_ziyadrw_faslah_internal_base.Response'
+      summary: الحصول على محتوى
+      tags:
+      - إدارة المحتوى
+  /cms/update-content/{id}:
+    put:
+      consumes:
+      - application/json
+      description: تحديث بودكاست بواسطة المعرف
+      parameters:
+      - description: معرف البودكاست
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: بيانات التحديث
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/github_com_ziyadrw_faslah_internal_modules_cms_dtos.UpdateContentRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: تم تحديث البودكاست بنجاح
+          schema:
+            allOf:
+            - $ref: '#/definitions/github_com_ziyadrw_faslah_internal_base.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/github_com_ziyadrw_faslah_internal_modules_cms_dtos.PodcastResponse'
+              type: object
+        "400":
+          description: خطأ في البيانات المدخلة
+          schema:
+            $ref: '#/definitions/github_com_ziyadrw_faslah_internal_base.Response'
+        "401":
+          description: غير مصرح
+          schema:
+            $ref: '#/definitions/github_com_ziyadrw_faslah_internal_base.Response'
+        "403":
+          description: ليس لديك الصلاحيات الكافية
+          schema:
+            $ref: '#/definitions/github_com_ziyadrw_faslah_internal_base.Response'
+        "404":
+          description: البودكاست غير موجود
+          schema:
+            $ref: '#/definitions/github_com_ziyadrw_faslah_internal_base.Response'
+        "500":
+          description: خطأ في الخادم
+          schema:
+            $ref: '#/definitions/github_com_ziyadrw_faslah_internal_base.Response'
+      security:
+      - ApiKeyAuth: []
+      summary: تحديث محتوى
+      tags:
+      - إدارة المحتوى
+  /discovery:
+    get:
+      consumes:
+      - application/json
+      description: استرجاع قائمة البودكاست مع إمكانية التصفية والترتيب
+      parameters:
+      - default: 1
+        description: رقم الصفحة
+        in: query
+        name: page
+        type: integer
+      - default: 10
+        description: عدد العناصر في الصفحة
+        in: query
+        name: per_page
+        type: integer
+      - default: newest
+        description: الترتيب (newest, oldest, popular)
+        in: query
+        name: sort
+        type: string
+      - description: تاريخ النشر من (YYYY-MM-DD)
+        in: query
+        name: published_from
+        type: string
+      - description: تاريخ النشر إلى (YYYY-MM-DD)
+        in: query
+        name: published_to
+        type: string
+      - description: الوسم
+        in: query
+        name: tag
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: تم استرجاع قائمة البودكاست بنجاح
+          schema:
+            $ref: '#/definitions/github_com_ziyadrw_faslah_internal_base.Response'
+        "400":
+          description: خطأ في البيانات المدخلة
+          schema:
+            $ref: '#/definitions/github_com_ziyadrw_faslah_internal_base.Response'
+        "500":
+          description: خطأ في الخادم
+          schema:
+            $ref: '#/definitions/github_com_ziyadrw_faslah_internal_base.Response'
+      summary: قائمة البودكاست
+      tags:
+      - اكتشاف البودكاست
+  /discovery/popular:
+    get:
+      consumes:
+      - application/json
+      description: استرجاع أكثر 10 بودكاست شعبية في آخر 24 ساعة
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: تم استرجاع البودكاست الشائعة بنجاح
+          schema:
+            allOf:
+            - $ref: '#/definitions/github_com_ziyadrw_faslah_internal_base.Response'
+            - properties:
+                data:
+                  items:
+                    $ref: '#/definitions/github_com_ziyadrw_faslah_internal_modules_discovery_dtos.PopularPodcastResponse'
+                  type: array
+              type: object
+        "500":
+          description: خطأ في الخادم
+          schema:
+            $ref: '#/definitions/github_com_ziyadrw_faslah_internal_base.Response'
+      summary: البودكاست الشائعة
+      tags:
+      - اكتشاف البودكاست
+  /discovery/search:
+    get:
+      consumes:
+      - application/json
+      description: البحث في البودكاست بواسطة العنوان أو الوصف أو الوسوم
+      parameters:
+      - default: 1
+        description: رقم الصفحة
+        in: query
+        name: page
+        type: integer
+      - default: 10
+        description: عدد العناصر في الصفحة
+        in: query
+        name: per_page
+        type: integer
+      - description: مصطلح البحث
+        in: query
+        name: q
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: تم استرجاع نتائج البحث بنجاح
+          schema:
+            $ref: '#/definitions/github_com_ziyadrw_faslah_internal_base.Response'
+        "400":
+          description: خطأ في البيانات المدخلة
+          schema:
+            $ref: '#/definitions/github_com_ziyadrw_faslah_internal_base.Response'
+        "500":
+          description: خطأ في الخادم
+          schema:
+            $ref: '#/definitions/github_com_ziyadrw_faslah_internal_base.Response'
+      summary: البحث في البودكاست
+      tags:
+      - اكتشاف البودكاست
+  /podcasts/{id}/track-play:
+    post:
+      consumes:
+      - application/json
+      description: تسجيل موضع التشغيل الحالي للبودكاست
+      parameters:
+      - description: معرف البودكاست
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: بيانات التشغيل
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/github_com_ziyadrw_faslah_internal_modules_user_dtos.TrackPlayRequest'
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: تم تتبع التشغيل بنجاح
+        "400":
+          description: خطأ في البيانات المدخلة
+          schema:
+            $ref: '#/definitions/github_com_ziyadrw_faslah_internal_base.Response'
+        "401":
+          description: غير مصرح
+          schema:
+            $ref: '#/definitions/github_com_ziyadrw_faslah_internal_base.Response'
+        "500":
+          description: خطأ في الخادم
+          schema:
+            $ref: '#/definitions/github_com_ziyadrw_faslah_internal_base.Response'
+      security:
+      - ApiKeyAuth: []
+      summary: تتبع تشغيل البودكاست
+      tags:
+      - تشغيل البودكاست
+  /users/login:
+    post:
+      consumes:
+      - application/json
+      description: مصادقة المستخدم وإنشاء رمز JWT
+      parameters:
+      - description: بيانات تسجيل الدخول
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/github_com_ziyadrw_faslah_internal_modules_user_dtos.LoginRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: تم تسجيل الدخول بنجاح
+          schema:
+            allOf:
+            - $ref: '#/definitions/github_com_ziyadrw_faslah_internal_base.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/github_com_ziyadrw_faslah_internal_modules_user_dtos.AuthResponse'
+              type: object
+        "400":
+          description: خطأ في البيانات المدخلة
+          schema:
+            $ref: '#/definitions/github_com_ziyadrw_faslah_internal_base.Response'
+        "401":
+          description: بيانات الاعتماد غير صالحة
+          schema:
+            $ref: '#/definitions/github_com_ziyadrw_faslah_internal_base.Response'
+        "500":
+          description: خطأ في الخادم
+          schema:
+            $ref: '#/definitions/github_com_ziyadrw_faslah_internal_base.Response'
+      summary: تسجيل الدخول
+      tags:
+      - المستخدمين والمصادقة
+  /users/me:
+    get:
+      consumes:
+      - application/json
+      description: استرجاع معلومات الملف الشخصي للمستخدم الحالي
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: تم استرجاع الملف الشخصي بنجاح
+          schema:
+            allOf:
+            - $ref: '#/definitions/github_com_ziyadrw_faslah_internal_base.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/github_com_ziyadrw_faslah_internal_modules_user_dtos.UserResponse'
+              type: object
+        "401":
+          description: غير مصرح
+          schema:
+            $ref: '#/definitions/github_com_ziyadrw_faslah_internal_base.Response'
+        "500":
+          description: خطأ في الخادم
+          schema:
+            $ref: '#/definitions/github_com_ziyadrw_faslah_internal_base.Response'
+      security:
+      - ApiKeyAuth: []
+      summary: الحصول على الملف الشخصي
+      tags:
+      - المستخدمين والمصادقة
+  /users/me/history:
+    get:
+      consumes:
+      - application/json
+      description: استرجاع سجل مشاهدة البودكاست للمستخدم الحالي
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: تم استرجاع سجل المشاهدة بنجاح
+          schema:
+            allOf:
+            - $ref: '#/definitions/github_com_ziyadrw_faslah_internal_base.Response'
+            - properties:
+                data:
+                  items:
+                    $ref: '#/definitions/github_com_ziyadrw_faslah_internal_modules_user_dtos.WatchHistoryResponse'
+                  type: array
+              type: object
+        "401":
+          description: غير مصرح
+          schema:
+            $ref: '#/definitions/github_com_ziyadrw_faslah_internal_base.Response'
+        "500":
+          description: خطأ في الخادم
+          schema:
+            $ref: '#/definitions/github_com_ziyadrw_faslah_internal_base.Response'
+      security:
+      - ApiKeyAuth: []
+      summary: الحصول على سجل المشاهدة
+      tags:
+      - المستخدمين والمصادقة
+  /users/signup:
+    post:
+      consumes:
+      - application/json
+      description: تسجيل مستخدم جديد وإنشاء حساب
+      parameters:
+      - description: بيانات التسجيل
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/github_com_ziyadrw_faslah_internal_modules_user_dtos.SignupRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: تم التسجيل بنجاح
+          schema:
+            allOf:
+            - $ref: '#/definitions/github_com_ziyadrw_faslah_internal_base.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/github_com_ziyadrw_faslah_internal_modules_user_dtos.AuthResponse'
+              type: object
+        "400":
+          description: خطأ في البيانات المدخلة
+          schema:
+            $ref: '#/definitions/github_com_ziyadrw_faslah_internal_base.Response'
+        "500":
+          description: خطأ في الخادم
+          schema:
+            $ref: '#/definitions/github_com_ziyadrw_faslah_internal_base.Response'
+      summary: تسجيل مستخدم جديد
+      tags:
+      - المستخدمين والمصادقة
+schemes:
+- http
+- https
+securityDefinitions:
+  ApiKeyAuth:
+    description: 'أدخل رمز JWT مع البادئة Bearer، مثال: "Bearer abcdef123456"'
+    in: header
+    name: Authorization
+    type: apiKey
+swagger: "2.0"

@@ -19,18 +19,18 @@ func NewPodcastHandler(podcastService *podcastServices.PodcastService) *PodcastH
 
 // CreateContent godoc
 // @Summary إنشاء بودكاست جديد
-// @Description إنشاء بودكاست جديد من خلال رفع ملف MP4 مباشرة أو من خلال رابط يوتيوب
+// @Description إنشاء بودكاست جديد من خلال رفع ملف MP4 مباشرة أو من خلال رابط يوتيوب. يمكنك إما تقديم رابط فيديو يوتيوب وسنقوم بتنزيله واستخراج البيانات الوصفية تلقائيًا، أو يمكنك رفع ملف MP4 مباشرة وتقديم البيانات الوصفية يدويًا. في كلتا الحالتين، سيتم تخزين الفيديو في خدمة Cloudflare R2 الخاصة بنا تحت نطاق media.faslah.net للوصول السريع والآمن.
 // @Tags إنشاء المحتوى
 // @Accept multipart/form-data
 // @Accept json
 // @Produce json
 // @Security ApiKeyAuth
-// @Param source_url formData string false "رابط يوتيوب (مطلوب إذا لم يتم تقديم ملف)"
-// @Param file formData file false "ملف MP4 (مطلوب إذا لم يتم تقديم رابط يوتيوب)"
-// @Param title formData string false "العنوان (مطلوب لرفع الملف، اختياري لرابط يوتيوب)"
-// @Param description formData string false "الوصف (مطلوب لرفع الملف، اختياري لرابط يوتيوب)"
-// @Param tags formData []string false "الوسوم (مطلوبة لرفع الملف، اختيارية لرابط يوتيوب)"
-// @Param published_at formData string false "تاريخ النشر (اختياري)"
+// @Param source_url formData string false "رابط يوتيوب (مطلوب إذا لم يتم تقديم ملف). سنقوم بتنزيل الفيديو واستخراج العنوان والوصف والوسوم تلقائيًا."
+// @Param file formData file false "ملف MP4 (مطلوب إذا لم يتم تقديم رابط يوتيوب). يجب أن يكون بتنسيق MP4."
+// @Param title formData string false "العنوان (مطلوب لرفع الملف، اختياري لرابط يوتيوب). إذا قدمت رابط يوتيوب، يمكنك تجاوز العنوان المستخرج تلقائيًا."
+// @Param description formData string false "الوصف (مطلوب لرفع الملف، اختياري لرابط يوتيوب). إذا قدمت رابط يوتيوب، يمكنك تجاوز الوصف المستخرج تلقائيًا."
+// @Param tags formData []string false "الوسوم (مطلوبة لرفع الملف، اختيارية لرابط يوتيوب). قائمة من الكلمات المفتاحية لتسهيل البحث."
+// @Param published_at formData string false "تاريخ النشر (اختياري). بتنسيق ISO 8601 (YYYY-MM-DDTHH:MM:SSZ)."
 // @Success 200 {object} base.Response{data=podcastDTOs.PodcastResponse} "تم إنشاء البودكاست بنجاح"
 // @Failure 400 {object} base.Response "خطأ في البيانات المدخلة"
 // @Failure 401 {object} base.Response "غير مصرح"

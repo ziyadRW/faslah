@@ -3,16 +3,1106 @@ package docs
 
 import "github.com/swaggo/swag"
 
-const docTemplate = ``
+const docTemplate = `{
+    "schemes": {{ marshal .Schemes }},
+    "swagger": "2.0",
+    "info": {
+        "description": "{{escape .Description}}",
+        "title": "{{.Title}}",
+        "termsOfService": "http://swagger.io/terms/",
+        "contact": {
+            "name": "فاصلة",
+            "url": "https://github.com/ziyadrw/faslah",
+            "email": "zeadAlrouasheed@gmail.com"
+        },
+        "version": "{{.Version}}"
+    },
+    "host": "{{.Host}}",
+    "basePath": "{{.BasePath}}",
+    "paths": {
+        "/cms/create-content": {
+            "post": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "إنشاء بودكاست جديد من خلال رفع ملف MP4 مباشرة أو من خلال رابط يوتيوب. يمكنك إما تقديم رابط فيديو يوتيوب وسنقوم بتنزيله واستخراج البيانات الوصفية تلقائيًا، أو يمكنك رفع ملف MP4 مباشرة وتقديم البيانات الوصفية يدويًا. في كلتا الحالتين، سيتم تخزين الفيديو في خدمة Cloudflare R2 الخاصة بنا تحت نطاق media.faslah.net للوصول السريع والآمن.",
+                "consumes": [
+                    "multipart/form-data",
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "إنشاء المحتوى"
+                ],
+                "summary": "إنشاء بودكاست جديد",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "رابط يوتيوب (مطلوب إذا لم يتم تقديم ملف). سنقوم بتنزيل الفيديو واستخراج العنوان والوصف والوسوم تلقائيًا.",
+                        "name": "source_url",
+                        "in": "formData"
+                    },
+                    {
+                        "type": "file",
+                        "description": "ملف MP4 (مطلوب إذا لم يتم تقديم رابط يوتيوب). يجب أن يكون بتنسيق MP4.",
+                        "name": "file",
+                        "in": "formData"
+                    },
+                    {
+                        "type": "string",
+                        "description": "العنوان (مطلوب لرفع الملف، اختياري لرابط يوتيوب). إذا قدمت رابط يوتيوب، يمكنك تجاوز العنوان المستخرج تلقائيًا.",
+                        "name": "title",
+                        "in": "formData"
+                    },
+                    {
+                        "type": "string",
+                        "description": "الوصف (مطلوب لرفع الملف، اختياري لرابط يوتيوب). إذا قدمت رابط يوتيوب، يمكنك تجاوز الوصف المستخرج تلقائيًا.",
+                        "name": "description",
+                        "in": "formData"
+                    },
+                    {
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        },
+                        "collectionFormat": "csv",
+                        "description": "الوسوم (مطلوبة لرفع الملف، اختيارية لرابط يوتيوب). قائمة من الكلمات المفتاحية لتسهيل البحث.",
+                        "name": "tags",
+                        "in": "formData"
+                    },
+                    {
+                        "type": "string",
+                        "description": "تاريخ النشر (اختياري). بتنسيق ISO 8601 (YYYY-MM-DDTHH:MM:SSZ).",
+                        "name": "published_at",
+                        "in": "formData"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "تم إنشاء البودكاست بنجاح",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/github_com_ziyadrw_faslah_internal_base.Response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/github_com_ziyadrw_faslah_internal_modules_cms_dtos.PodcastResponse"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "خطأ في البيانات المدخلة",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_ziyadrw_faslah_internal_base.Response"
+                        }
+                    },
+                    "401": {
+                        "description": "غير مصرح",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_ziyadrw_faslah_internal_base.Response"
+                        }
+                    },
+                    "500": {
+                        "description": "خطأ في الخادم",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_ziyadrw_faslah_internal_base.Response"
+                        }
+                    }
+                }
+            }
+        },
+        "/cms/delete-content/{id}": {
+            "delete": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "حذف بودكاست بواسطة المعرف",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "إدارة المحتوى"
+                ],
+                "summary": "حذف محتوى",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "معرف البودكاست",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "تم حذف البودكاست بنجاح",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_ziyadrw_faslah_internal_base.Response"
+                        }
+                    },
+                    "400": {
+                        "description": "معرف البودكاست غير صالح",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_ziyadrw_faslah_internal_base.Response"
+                        }
+                    },
+                    "401": {
+                        "description": "غير مصرح",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_ziyadrw_faslah_internal_base.Response"
+                        }
+                    },
+                    "403": {
+                        "description": "ليس لديك الصلاحيات الكافية",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_ziyadrw_faslah_internal_base.Response"
+                        }
+                    },
+                    "404": {
+                        "description": "البودكاست غير موجود",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_ziyadrw_faslah_internal_base.Response"
+                        }
+                    },
+                    "500": {
+                        "description": "خطأ في الخادم",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_ziyadrw_faslah_internal_base.Response"
+                        }
+                    }
+                }
+            }
+        },
+        "/cms/my-content": {
+            "post": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "استرجاع جميع البودكاست التي أنشأها المستخدم الحالي",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "إدارة المحتوى"
+                ],
+                "summary": "الحصول على المحتوى الخاص بي",
+                "responses": {
+                    "200": {
+                        "description": "تم استرجاع المحتوى الخاص بك بنجاح",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/github_com_ziyadrw_faslah_internal_base.Response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/definitions/github_com_ziyadrw_faslah_internal_modules_cms_dtos.PodcastResponse"
+                                            }
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "401": {
+                        "description": "غير مصرح",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_ziyadrw_faslah_internal_base.Response"
+                        }
+                    },
+                    "500": {
+                        "description": "خطأ في الخادم",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_ziyadrw_faslah_internal_base.Response"
+                        }
+                    }
+                }
+            }
+        },
+        "/cms/retreive-content/{id}": {
+            "get": {
+                "description": "استرجاع بودكاست بواسطة المعرف",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "إدارة المحتوى"
+                ],
+                "summary": "الحصول على محتوى",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "معرف البودكاست",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "تم استرجاع البودكاست بنجاح",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/github_com_ziyadrw_faslah_internal_base.Response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/github_com_ziyadrw_faslah_internal_modules_cms_dtos.PodcastResponse"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "معرف البودكاست غير صالح",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_ziyadrw_faslah_internal_base.Response"
+                        }
+                    },
+                    "404": {
+                        "description": "البودكاست غير موجود",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_ziyadrw_faslah_internal_base.Response"
+                        }
+                    },
+                    "500": {
+                        "description": "خطأ في الخادم",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_ziyadrw_faslah_internal_base.Response"
+                        }
+                    }
+                }
+            }
+        },
+        "/cms/update-content/{id}": {
+            "put": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "تحديث بودكاست بواسطة المعرف",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "إدارة المحتوى"
+                ],
+                "summary": "تحديث محتوى",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "معرف البودكاست",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "بيانات التحديث",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/github_com_ziyadrw_faslah_internal_modules_cms_dtos.UpdateContentRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "تم تحديث البودكاست بنجاح",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/github_com_ziyadrw_faslah_internal_base.Response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/github_com_ziyadrw_faslah_internal_modules_cms_dtos.PodcastResponse"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "خطأ في البيانات المدخلة",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_ziyadrw_faslah_internal_base.Response"
+                        }
+                    },
+                    "401": {
+                        "description": "غير مصرح",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_ziyadrw_faslah_internal_base.Response"
+                        }
+                    },
+                    "403": {
+                        "description": "ليس لديك الصلاحيات الكافية",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_ziyadrw_faslah_internal_base.Response"
+                        }
+                    },
+                    "404": {
+                        "description": "البودكاست غير موجود",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_ziyadrw_faslah_internal_base.Response"
+                        }
+                    },
+                    "500": {
+                        "description": "خطأ في الخادم",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_ziyadrw_faslah_internal_base.Response"
+                        }
+                    }
+                }
+            }
+        },
+        "/discovery": {
+            "get": {
+                "description": "استرجاع قائمة البودكاست مع إمكانية التصفية والترتيب",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "اكتشاف البودكاست"
+                ],
+                "summary": "قائمة البودكاست",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "default": 1,
+                        "description": "رقم الصفحة",
+                        "name": "page",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "default": 10,
+                        "description": "عدد العناصر في الصفحة",
+                        "name": "per_page",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "default": "newest",
+                        "description": "الترتيب (newest, oldest, popular)",
+                        "name": "sort",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "تاريخ النشر من (YYYY-MM-DD)",
+                        "name": "published_from",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "تاريخ النشر إلى (YYYY-MM-DD)",
+                        "name": "published_to",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "الوسم",
+                        "name": "tag",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "تم استرجاع قائمة البودكاست بنجاح",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_ziyadrw_faslah_internal_base.Response"
+                        }
+                    },
+                    "400": {
+                        "description": "خطأ في البيانات المدخلة",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_ziyadrw_faslah_internal_base.Response"
+                        }
+                    },
+                    "500": {
+                        "description": "خطأ في الخادم",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_ziyadrw_faslah_internal_base.Response"
+                        }
+                    }
+                }
+            }
+        },
+        "/discovery/popular": {
+            "get": {
+                "description": "استرجاع أكثر 10 بودكاست شعبية في آخر 24 ساعة",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "اكتشاف البودكاست"
+                ],
+                "summary": "البودكاست الشائعة",
+                "responses": {
+                    "200": {
+                        "description": "تم استرجاع البودكاست الشائعة بنجاح",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/github_com_ziyadrw_faslah_internal_base.Response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/definitions/github_com_ziyadrw_faslah_internal_modules_discovery_dtos.PopularPodcastResponse"
+                                            }
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "500": {
+                        "description": "خطأ في الخادم",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_ziyadrw_faslah_internal_base.Response"
+                        }
+                    }
+                }
+            }
+        },
+        "/discovery/search": {
+            "get": {
+                "description": "البحث في البودكاست بواسطة العنوان أو الوصف أو الوسوم",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "اكتشاف البودكاست"
+                ],
+                "summary": "البحث في البودكاست",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "default": 1,
+                        "description": "رقم الصفحة",
+                        "name": "page",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "default": 10,
+                        "description": "عدد العناصر في الصفحة",
+                        "name": "per_page",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "مصطلح البحث",
+                        "name": "q",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "تم استرجاع نتائج البحث بنجاح",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_ziyadrw_faslah_internal_base.Response"
+                        }
+                    },
+                    "400": {
+                        "description": "خطأ في البيانات المدخلة",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_ziyadrw_faslah_internal_base.Response"
+                        }
+                    },
+                    "500": {
+                        "description": "خطأ في الخادم",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_ziyadrw_faslah_internal_base.Response"
+                        }
+                    }
+                }
+            }
+        },
+        "/podcasts/{id}/track-play": {
+            "post": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "تسجيل موضع التشغيل الحالي للبودكاست",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "تشغيل البودكاست"
+                ],
+                "summary": "تتبع تشغيل البودكاست",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "معرف البودكاست",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "بيانات التشغيل",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/github_com_ziyadrw_faslah_internal_modules_user_dtos.TrackPlayRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "تم تتبع التشغيل بنجاح"
+                    },
+                    "400": {
+                        "description": "خطأ في البيانات المدخلة",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_ziyadrw_faslah_internal_base.Response"
+                        }
+                    },
+                    "401": {
+                        "description": "غير مصرح",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_ziyadrw_faslah_internal_base.Response"
+                        }
+                    },
+                    "500": {
+                        "description": "خطأ في الخادم",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_ziyadrw_faslah_internal_base.Response"
+                        }
+                    }
+                }
+            }
+        },
+        "/users/login": {
+            "post": {
+                "description": "مصادقة المستخدم وإنشاء رمز JWT",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "المستخدمين والمصادقة"
+                ],
+                "summary": "تسجيل الدخول",
+                "parameters": [
+                    {
+                        "description": "بيانات تسجيل الدخول",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/github_com_ziyadrw_faslah_internal_modules_user_dtos.LoginRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "تم تسجيل الدخول بنجاح",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/github_com_ziyadrw_faslah_internal_base.Response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/github_com_ziyadrw_faslah_internal_modules_user_dtos.AuthResponse"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "خطأ في البيانات المدخلة",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_ziyadrw_faslah_internal_base.Response"
+                        }
+                    },
+                    "401": {
+                        "description": "بيانات الاعتماد غير صالحة",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_ziyadrw_faslah_internal_base.Response"
+                        }
+                    },
+                    "500": {
+                        "description": "خطأ في الخادم",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_ziyadrw_faslah_internal_base.Response"
+                        }
+                    }
+                }
+            }
+        },
+        "/users/me": {
+            "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "استرجاع معلومات الملف الشخصي للمستخدم الحالي",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "المستخدمين والمصادقة"
+                ],
+                "summary": "الحصول على الملف الشخصي",
+                "responses": {
+                    "200": {
+                        "description": "تم استرجاع الملف الشخصي بنجاح",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/github_com_ziyadrw_faslah_internal_base.Response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/github_com_ziyadrw_faslah_internal_modules_user_dtos.UserResponse"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "401": {
+                        "description": "غير مصرح",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_ziyadrw_faslah_internal_base.Response"
+                        }
+                    },
+                    "500": {
+                        "description": "خطأ في الخادم",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_ziyadrw_faslah_internal_base.Response"
+                        }
+                    }
+                }
+            }
+        },
+        "/users/me/history": {
+            "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "استرجاع سجل مشاهدة البودكاست للمستخدم الحالي",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "المستخدمين والمصادقة"
+                ],
+                "summary": "الحصول على سجل المشاهدة",
+                "responses": {
+                    "200": {
+                        "description": "تم استرجاع سجل المشاهدة بنجاح",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/github_com_ziyadrw_faslah_internal_base.Response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/definitions/github_com_ziyadrw_faslah_internal_modules_user_dtos.WatchHistoryResponse"
+                                            }
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "401": {
+                        "description": "غير مصرح",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_ziyadrw_faslah_internal_base.Response"
+                        }
+                    },
+                    "500": {
+                        "description": "خطأ في الخادم",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_ziyadrw_faslah_internal_base.Response"
+                        }
+                    }
+                }
+            }
+        },
+        "/users/signup": {
+            "post": {
+                "description": "تسجيل مستخدم جديد وإنشاء حساب",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "المستخدمين والمصادقة"
+                ],
+                "summary": "تسجيل مستخدم جديد",
+                "parameters": [
+                    {
+                        "description": "بيانات التسجيل",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/github_com_ziyadrw_faslah_internal_modules_user_dtos.SignupRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "تم التسجيل بنجاح",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/github_com_ziyadrw_faslah_internal_base.Response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/github_com_ziyadrw_faslah_internal_modules_user_dtos.AuthResponse"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "خطأ في البيانات المدخلة",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_ziyadrw_faslah_internal_base.Response"
+                        }
+                    },
+                    "500": {
+                        "description": "خطأ في الخادم",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_ziyadrw_faslah_internal_base.Response"
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "definitions": {
+        "github_com_ziyadrw_faslah_internal_base.Response": {
+            "type": "object",
+            "properties": {
+                "data": {},
+                "errors": {},
+                "message_description": {
+                    "type": "string"
+                },
+                "message_title": {
+                    "type": "string"
+                },
+                "message_type": {
+                    "type": "string"
+                }
+            }
+        },
+        "github_com_ziyadrw_faslah_internal_modules_cms_dtos.PodcastResponse": {
+            "type": "object",
+            "properties": {
+                "created_at": {
+                    "type": "string"
+                },
+                "description": {
+                    "type": "string"
+                },
+                "duration_secs": {
+                    "type": "integer"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "media_url": {
+                    "type": "string"
+                },
+                "published_at": {
+                    "type": "string"
+                },
+                "source_url": {
+                    "type": "string"
+                },
+                "tags": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "title": {
+                    "type": "string"
+                },
+                "updated_at": {
+                    "type": "string"
+                },
+                "user_id": {
+                    "type": "string"
+                }
+            }
+        },
+        "github_com_ziyadrw_faslah_internal_modules_cms_dtos.UpdateContentRequest": {
+            "type": "object",
+            "properties": {
+                "description": {
+                    "type": "string"
+                },
+                "duration_secs": {
+                    "type": "integer"
+                },
+                "media_url": {
+                    "type": "string"
+                },
+                "published_at": {
+                    "type": "string"
+                },
+                "source_url": {
+                    "type": "string"
+                },
+                "tags": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "title": {
+                    "type": "string"
+                }
+            }
+        },
+        "github_com_ziyadrw_faslah_internal_modules_discovery_dtos.PopularPodcastResponse": {
+            "type": "object",
+            "properties": {
+                "description": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "media_url": {
+                    "type": "string"
+                },
+                "play_count": {
+                    "type": "integer"
+                },
+                "title": {
+                    "type": "string"
+                }
+            }
+        },
+        "github_com_ziyadrw_faslah_internal_modules_user_dtos.AuthResponse": {
+            "type": "object",
+            "properties": {
+                "token": {
+                    "type": "string"
+                },
+                "user": {
+                    "$ref": "#/definitions/github_com_ziyadrw_faslah_internal_modules_user_dtos.UserResponse"
+                }
+            }
+        },
+        "github_com_ziyadrw_faslah_internal_modules_user_dtos.LoginRequest": {
+            "type": "object",
+            "required": [
+                "email",
+                "password"
+            ],
+            "properties": {
+                "email": {
+                    "type": "string"
+                },
+                "password": {
+                    "type": "string"
+                }
+            }
+        },
+        "github_com_ziyadrw_faslah_internal_modules_user_dtos.SignupRequest": {
+            "type": "object",
+            "required": [
+                "email",
+                "name",
+                "password"
+            ],
+            "properties": {
+                "email": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "password": {
+                    "type": "string"
+                },
+                "role": {
+                    "enum": [
+                        "viewer",
+                        "creator"
+                    ],
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/github_com_ziyadrw_faslah_internal_modules_user_enums.Type"
+                        }
+                    ]
+                }
+            }
+        },
+        "github_com_ziyadrw_faslah_internal_modules_user_dtos.TrackPlayRequest": {
+            "type": "object",
+            "required": [
+                "playback_second"
+            ],
+            "properties": {
+                "playback_second": {
+                    "type": "integer",
+                    "minimum": 0
+                }
+            }
+        },
+        "github_com_ziyadrw_faslah_internal_modules_user_dtos.UserResponse": {
+            "type": "object",
+            "properties": {
+                "created_at": {
+                    "type": "string"
+                },
+                "email": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "role": {
+                    "$ref": "#/definitions/github_com_ziyadrw_faslah_internal_modules_user_enums.Type"
+                }
+            }
+        },
+        "github_com_ziyadrw_faslah_internal_modules_user_dtos.WatchHistoryResponse": {
+            "type": "object",
+            "properties": {
+                "last_played_at": {
+                    "type": "string"
+                },
+                "playback_second": {
+                    "type": "integer"
+                },
+                "podcast_id": {
+                    "type": "string"
+                }
+            }
+        },
+        "github_com_ziyadrw_faslah_internal_modules_user_enums.Type": {
+            "type": "string",
+            "enum": [
+                "creator",
+                "viewer",
+                "admin"
+            ],
+            "x-enum-varnames": [
+                "TypeCreator",
+                "TypeViewer",
+                "TypeAdmin"
+            ]
+        }
+    },
+    "securityDefinitions": {
+        "ApiKeyAuth": {
+            "description": "أدخل رمز JWT مع البادئة Bearer، مثال: \"Bearer abcdef123456\"",
+            "type": "apiKey",
+            "name": "Authorization",
+            "in": "header"
+        }
+    }
+}`
 
 // SwaggerInfo holds exported Swagger Info so clients can modify it
 var SwaggerInfo = &swag.Spec{
-	Version:          "",
+	Version:          "1.0",
 	Host:             "",
-	BasePath:         "",
-	Schemes:          []string{},
-	Title:            "",
-	Description:      "",
+	BasePath:         "/",
+	Schemes:          []string{"http", "https"},
+	Title:            "فاصلة API",
+	Description:      "واجهة برمجة التطبيقات لمنصة فاصلة للبودكاست",
 	InfoInstanceName: "swagger",
 	SwaggerTemplate:  docTemplate,
 	LeftDelim:        "{{",
