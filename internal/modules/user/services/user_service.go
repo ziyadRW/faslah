@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/golang-jwt/jwt/v5"
+	"github.com/google/uuid"
 	"github.com/ziyadrw/faslah/internal/base"
 	userDTOs "github.com/ziyadrw/faslah/internal/modules/user/dtos"
 	userEnums "github.com/ziyadrw/faslah/internal/modules/user/enums"
@@ -96,6 +97,32 @@ func (us *UserService) Login(dto userDTOs.LoginRequest) base.Response {
 	}
 
 	return base.SetData(response, "تم تسجيل الدخول بنجاح")
+}
+
+// GetProfile retrieves the user profile
+func (us *UserService) GetProfile(userID string) base.Response {
+	id, err := uuid.Parse(userID)
+	if err != nil {
+		return base.SetErrorMessage("معرف المستخدم غير صالح", err.Error())
+	}
+
+	user, err := us.UserRepository.GetUserByID(id)
+	if err != nil {
+		return base.SetErrorMessage("خطأ في الخادم", err.Error())
+	}
+	if user == nil {
+		return base.SetErrorMessage("المستخدم غير موجود", "لم يتم العثور على المستخدم")
+	}
+
+	response := userDTOs.UserResponse{
+		ID:        user.ID.String(),
+		Email:     user.Email,
+		Name:      user.Name,
+		Role:      user.Role,
+		CreatedAt: user.CreatedAt,
+	}
+
+	return base.SetData(response)
 }
 
 func (us *UserService) generateJWT(userID string) (string, error) {
