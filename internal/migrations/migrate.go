@@ -5,7 +5,7 @@ import (
 	"log"
 
 	"github.com/ziyadrw/faslah/config"
-	podcast "github.com/ziyadrw/faslah/internal/modules/podcast/models"
+	podcast "github.com/ziyadrw/faslah/internal/modules/cms/models"
 	user "github.com/ziyadrw/faslah/internal/modules/user/models"
 )
 
