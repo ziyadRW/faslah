@@ -10,16 +10,17 @@
 
 - **لغة البرمجة:** Golang
 - **تخزين الملفات:** Cloudflare R2
+- **تسريع تحميل الفيديوهات وتقليل استهلاك الخادم:** Cloudflare CDN
 - **استخراج البيانات من الفيديو:** ffmpeg
 - **تحليل فيديوهات يوتيوب:** [yt-dlp](https://github.com/yt-dlp/yt-dlp) عبر مكتبة Go
 - **قاعدة البيانات:** PostgreSQL
 - **الاستضافة:** Amazon Web Services (AWS)
-- **توثيق API:** [Swagger / OpenAPI 3.0](http://localhost:8080/swagger/index.html#/overview) - [عرض التوثيق الكامل](http://localhost:8080/swagger/index.html#/)
+- **توثيق API:** [Swagger / OpenAPI 3.0](http://faslah.org/swagger/index.html#/overview) - [عرض التوثيق الكامل](http://faslah.org/swagger/index.html#/)
 
 ---
 
 ## 🔊 فاصلة | واجهات برمجة خلفية Swagger UI
-- **توثيق API:** [Swagger / OpenAPI 3.0](http://localhost:8080/swagger/index.html#/overview) - [عرض التوثيق الكامل](http://localhost:8080/swagger/index.html#/)
+- **توثيق API:** [Swagger / OpenAPI 3.0](http://faslah.org/swagger/index.html#/overview) - [عرض التوثيق الكامل](http://faslah.org/swagger/index.html#/)
 
 ---
 
