@@ -125,6 +125,49 @@ func (us *UserService) GetProfile(userID string) base.Response {
 	return base.SetData(response)
 }
 
+// GetWatchHistory retrieves the user's watch history
+func (us *UserService) GetWatchHistory(userID string) base.Response {
+	id, err := uuid.Parse(userID)
+	if err != nil {
+		return base.SetErrorMessage("معرف المستخدم غير صالح", err.Error())
+	}
+
+	history, err := us.UserRepository.GetWatchHistory(id)
+	if err != nil {
+		return base.SetErrorMessage("خطأ في الخادم", err.Error())
+	}
+
+	var response []userDTOs.WatchHistoryResponse
+	for _, h := range history {
+		response = append(response, userDTOs.WatchHistoryResponse{
+			PodcastID:      h.PodcastID,
+			PlaybackSecond: h.PlaybackSecond,
+			LastPlayedAt:   h.LastPlayedAt,
+		})
+	}
+
+	return base.SetData(response)
+}
+
+// TrackPlay records a podcast play
+func (us *UserService) TrackPlay(userID string, podcastID string, dto userDTOs.TrackPlayRequest) base.Response {
+	uid, err := uuid.Parse(userID)
+	if err != nil {
+		return base.SetErrorMessage("معرف المستخدم غير صالح", err.Error())
+	}
+
+	pid, err := uuid.Parse(podcastID)
+	if err != nil {
+		return base.SetErrorMessage("معرف البودكاست غير صالح", err.Error())
+	}
+
+	if err := us.UserRepository.UpsertWatchHistory(uid, pid, dto.PlaybackSecond); err != nil {
+		return base.SetErrorMessage("فشل في تتبع التشغيل", err.Error())
+	}
+
+	return base.SetSuccessMessage("تم تتبع التشغيل بنجاح")
+}
+
 func (us *UserService) generateJWT(userID string) (string, error) {
 	jwtSecret := os.Getenv("JWT_SECRET")
 	if jwtSecret == "" {
