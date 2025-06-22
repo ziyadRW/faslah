@@ -54,3 +54,24 @@ func (ds *DiscoveryService) SearchPodcasts(dto discoveryDTOs.PodcastSearchReques
 
 	return base.SetPaginatedResponse(responseItems, dto.Page, dto.PerPage, int(totalCount))
 }
+
+// GetPopularPodcasts retrieves the top 10 podcasts by play count in the last 24 hours
+func (ds *DiscoveryService) GetPopularPodcasts() base.Response {
+	popularPodcasts, err := ds.DiscoveryRepository.GetPopularPodcasts()
+	if err != nil {
+		return base.SetErrorMessage("خطأ في الخادم", err.Error())
+	}
+
+	var response []discoveryDTOs.PopularPodcastResponse
+	for _, podcast := range popularPodcasts {
+		response = append(response, discoveryDTOs.PopularPodcastResponse{
+			ID:          podcast["id"].(string),
+			Title:       podcast["title"].(string),
+			Description: podcast["description"].(string),
+			MediaURL:    podcast["media_url"].(string),
+			PlayCount:   int(podcast["play_count"].(int64)),
+		})
+	}
+
+	return base.SetData(response)
+}
