@@ -15,6 +15,7 @@ func RegisterRoutes(e *echo.Echo, db *gorm.DB) {
 	podcastHandler := podcastHandlers.NewPodcastHandler(podcastService)
 
 	cmsGroup := e.Group("/cms", middlewares.RoleMiddleware(db))
+	cmsGroup.POST("/create-content", podcastHandler.CreateContent)
 
 	cmsGroup.GET("/retreive-content/:id", podcastHandler.GetContent)
 	cmsGroup.PUT("/update-content/:id", podcastHandler.UpdateContent)
