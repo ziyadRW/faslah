@@ -17,6 +17,42 @@ func NewPodcastHandler(podcastService *podcastServices.PodcastService) *PodcastH
 	}
 }
 
+// CreateContent godoc
+// @Summary إنشاء بودكاست جديد
+// @Description إنشاء بودكاست جديد من خلال رفع ملف MP4 مباشرة أو من خلال رابط يوتيوب
+// @Tags إنشاء المحتوى
+// @Accept multipart/form-data
+// @Accept json
+// @Produce json
+// @Security ApiKeyAuth
+// @Param source_url formData string false "رابط يوتيوب (مطلوب إذا لم يتم تقديم ملف)"
+// @Param file formData file false "ملف MP4 (مطلوب إذا لم يتم تقديم رابط يوتيوب)"
+// @Param title formData string false "العنوان (مطلوب لرفع الملف، اختياري لرابط يوتيوب)"
+// @Param description formData string false "الوصف (مطلوب لرفع الملف، اختياري لرابط يوتيوب)"
+// @Param tags formData []string false "الوسوم (مطلوبة لرفع الملف، اختيارية لرابط يوتيوب)"
+// @Param published_at formData string false "تاريخ النشر (اختياري)"
+// @Success 200 {object} base.Response{data=podcastDTOs.CreatePodcastResponse} "تم إنشاء البودكاست بنجاح"
+// @Failure 400 {object} base.Response "خطأ في البيانات المدخلة"
+// @Failure 401 {object} base.Response "غير مصرح"
+// @Failure 500 {object} base.Response "خطأ في الخادم"
+// @Router /cms/create-content [post]
+func (ph *PodcastHandler) CreateContent(c echo.Context) error {
+	userID := c.Get("user_id").(string)
+	var dto podcastDTOs.CreatePodcastRequest
+
+	file, err := c.FormFile("file")
+	if err == nil {
+		dto.File = file
+	}
+
+	if res, ok := base.BindAndValidate(c, &dto); !ok {
+		return c.JSON(res.HTTPStatus, res)
+	}
+
+	response := ph.PodcastService.CreateContent(dto, userID)
+	return c.JSON(response.HTTPStatus, response)
+}
+
 // GetContent godoc
 // @Summary الحصول على محتوى
 // @Description استرجاع بودكاست بواسطة المعرف
