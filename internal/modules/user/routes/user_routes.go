@@ -2,14 +2,19 @@ package user
 
 import (
 	"github.com/labstack/echo/v4"
+	userHandlers "github.com/ziyadrw/faslah/internal/modules/user/handlers"
+	userRepositories "github.com/ziyadrw/faslah/internal/modules/user/repositories"
+	userServices "github.com/ziyadrw/faslah/internal/modules/user/services"
 	"gorm.io/gorm"
-	"net/http"
 )
 
 func RegisterRoutes(e *echo.Echo, db *gorm.DB) {
+	userRepo := userRepositories.NewUserRepository(db)
+	userService := userServices.NewUserService(userRepo)
+	userHandler := userHandlers.NewUserHandler(userService)
+
 	usersRoutes := e.Group("/users")
-	usersRoutes.GET("/hello-world", func(c echo.Context) error {
-		return c.String(http.StatusOK, "Hello World")
-	})
+	usersRoutes.POST("/signup", userHandler.Signup)
+	usersRoutes.POST("/login", userHandler.Login)
 
 }
