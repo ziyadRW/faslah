@@ -241,3 +241,139 @@ func (ps *PodcastService) DeleteContent(id string) base.Response {
 
 	return base.SetSuccessMessage("تم حذف البودكاست بنجاح")
 }
+func (ps *PodcastService) UploadMedia(file []byte, filename string) base.Response {
+	uniqueFilename := fmt.Sprintf("%s_%s", uuid.New().String(), filename)
+
+	accessKeyID := os.Getenv("R2_ACCESS_KEY_ID")
+	secretAccessKey := os.Getenv("R2_SECRET_ACCESS_KEY")
+	bucketName := os.Getenv("R2_BUCKET_NAME")
+	bucketCode := os.Getenv("R2_BUCKET_CODE")
+	r2Endpoint := os.Getenv("R2_ENDPOINT_URL")
+
+	customResolver := aws.EndpointResolverWithOptionsFunc(func(service, region string, options ...interface{}) (aws.Endpoint, error) {
+		return aws.Endpoint{
+			URL:           r2Endpoint,
+			SigningRegion: "auto",
+		}, nil
+	})
+
+	cfg, err := config.LoadDefaultConfig(context.TODO(),
+		config.WithEndpointResolverWithOptions(customResolver),
+		config.WithCredentialsProvider(credentials.NewStaticCredentialsProvider(accessKeyID, secretAccessKey, "")),
+		config.WithRegion("auto"),
+	)
+	if err != nil {
+		return base.SetErrorMessage("فشل في تهيئة خدمة التخزين", err.Error())
+	}
+	s3Client := s3.NewFromConfig(cfg)
+	_, err = s3Client.PutObject(context.TODO(), &s3.PutObjectInput{
+		Bucket:      aws.String(bucketName),
+		Key:         aws.String(uniqueFilename),
+		Body:        bytes.NewReader(file),
+		ContentType: aws.String(http.DetectContentType(file)),
+	})
+	if err != nil {
+		return base.SetErrorMessage("فشل في رفع الملف", err.Error())
+	}
+	mediaURL := fmt.Sprintf("https://pub-%s.r2.dev/%s", bucketCode, uniqueFilename)
+	log.Println(mediaURL)
+	response := podcastDTOs.MediaUploadResponse{
+		MediaURL: mediaURL,
+	}
+
+	return base.SetData(response, "تم رفع الملف بنجاح")
+}
+
+func (ps *PodcastService) FetchYouTube(youtubeURL string) base.Response {
+	ytClient := youtube.Client{}
+
+	video, err := ytClient.GetVideo(youtubeURL)
+	if err != nil {
+		return base.SetErrorMessage("فشل في الحصول على معلومات الفيديو", err.Error())
+	}
+
+	title := video.Title
+	description := video.Description
+	durationSecs := int(video.Duration.Seconds())
+
+	var videoFormat, audioFormat *youtube.Format
+
+	for _, f := range video.Formats {
+		if strings.HasPrefix(f.MimeType, "video/mp4") {
+			videoFormat = &f
+			break
+		}
+	}
+
+	for _, f := range video.Formats {
+		if f.ItagNo == 140 {
+			audioFormat = &f
+			break
+		}
+	}
+	if audioFormat == nil {
+		for _, f := range video.Formats {
+			if strings.HasPrefix(f.MimeType, "audio/") {
+				audioFormat = &f
+				break
+			}
+		}
+	}
+
+	if videoFormat == nil || audioFormat == nil {
+		log.Println("Available formats:", video.Formats)
+		return base.SetErrorMessage("لم يتم العثور على تنسيقات مناسبة", "")
+	}
+
+	tempDir := os.TempDir()
+	videoPath := filepath.Join(tempDir, "video.mp4")
+	audioPath := filepath.Join(tempDir, "audio.m4a")
+	mergedPath := filepath.Join(tempDir, "merged_output.mp4")
+
+	videoStream, _, err := ytClient.GetStream(video, videoFormat)
+	if err != nil {
+		return base.SetErrorMessage("فشل تحميل الفيديو", err.Error())
+	}
+	videoBytes, err := io.ReadAll(videoStream)
+	if err != nil {
+		return base.SetErrorMessage("فشل قراءة بيانات الفيديو", err.Error())
+	}
+	if err := os.WriteFile(videoPath, videoBytes, 0644); err != nil {
+		return base.SetErrorMessage("فشل حفظ الفيديو", err.Error())
+	}
+
+	audioStream, _, err := ytClient.GetStream(video, audioFormat)
+	if err != nil {
+		return base.SetErrorMessage("فشل تحميل الصوت", err.Error())
+	}
+	audioBytes, err := io.ReadAll(audioStream)
+	if err != nil {
+		return base.SetErrorMessage("فشل قراءة بيانات الصوت", err.Error())
+	}
+	if err := os.WriteFile(audioPath, audioBytes, 0644); err != nil {
+		return base.SetErrorMessage("فشل حفظ الصوت", err.Error())
+	}
+
+	cmd := exec.Command("ffmpeg", "-y", "-i", videoPath, "-i", audioPath, "-c", "copy", mergedPath)
+	if err := cmd.Run(); err != nil {
+		return base.SetErrorMessage("فشل دمج الفيديو مع الصوت", err.Error())
+	}
+
+	mergedData, err := os.ReadFile(mergedPath)
+	if err != nil {
+		return base.SetErrorMessage("فشل قراءة الفيديو المدمج", err.Error())
+	}
+
+	_ = os.Remove(videoPath)
+	_ = os.Remove(audioPath)
+	_ = os.Remove(mergedPath)
+
+	response := podcastDTOs.YouTubeMetadataResponse{
+		VideoFile:    mergedData,
+		Title:        title,
+		Description:  description,
+		DurationSecs: durationSecs,
+	}
+
+	return base.SetData(response, "تم جلب الفيديو بنجاح")
+}
