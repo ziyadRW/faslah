@@ -14,7 +14,7 @@ import (
 func init() {
 	config.LoadEnv()
 	baseURL := config.GetEnv("BASE_URL", "localhost:8080")
-	appDomain := config.GetEnv("APP_DOMAIN", "faslah.net")
+	appDomain := config.GetEnv("APP_DOMAIN", "faslah.org")
 	docs.SwaggerInfo.Description = fmt.Sprintf(
 		`<div dir="rtl" style="text-align: right;">
 	إنشاء بودكاست جديد من خلال رفع ملف MP4 مباشرة أو من خلال رابط <strong>يوتيوب</strong>.
