@@ -3,20 +3,20 @@ package discovery
 import (
 	"github.com/ziyadrw/faslah/internal/base"
 	discoveryDTOs "github.com/ziyadrw/faslah/internal/modules/discovery/dtos"
-	podcast "github.com/ziyadrw/faslah/internal/modules/podcast/repositories"
+	discoveryRepositories "github.com/ziyadrw/faslah/internal/modules/discovery/repositories"
 )
 
 type DiscoveryService struct {
-	PodcastRepository *podcast.PodcastRepository
+	DiscoveryRepository *discoveryRepositories.DiscoveryRepository
 }
 
-func NewDiscoveryService(podcastRepository *podcast.PodcastRepository) *DiscoveryService {
-	return &DiscoveryService{PodcastRepository: podcastRepository}
+func NewDiscoveryService(discoveryRepository *discoveryRepositories.DiscoveryRepository) *DiscoveryService {
+	return &DiscoveryService{DiscoveryRepository: discoveryRepository}
 }
 
 // ListPodcasts retrieves a paginated list of podcasts with optional filters
 func (ds *DiscoveryService) ListPodcasts(dto discoveryDTOs.PodcastListRequest) base.Response {
-	podcasts, totalCount, err := ds.PodcastRepository.ListPodcasts(
+	podcasts, totalCount, err := ds.DiscoveryRepository.ListPodcasts(
 		dto.Page,
 		dto.PerPage,
 		dto.Sort,
@@ -38,7 +38,7 @@ func (ds *DiscoveryService) ListPodcasts(dto discoveryDTOs.PodcastListRequest) b
 
 // SearchPodcasts searches for podcasts by title, description, or tags
 func (ds *DiscoveryService) SearchPodcasts(dto discoveryDTOs.PodcastSearchRequest) base.Response {
-	podcasts, totalCount, err := ds.PodcastRepository.SearchPodcasts(
+	podcasts, totalCount, err := ds.DiscoveryRepository.SearchPodcasts(
 		dto.Query,
 		dto.Page,
 		dto.PerPage,
