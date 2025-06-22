@@ -44,6 +44,19 @@ type PodcastResponse struct {
 	UpdatedAt    time.Time  `json:"updated_at"`
 }
 
+// MediaUploadResponse represents the response body for media upload
+type MediaUploadResponse struct {
+	MediaURL string `json:"media_url"`
+}
+
+// YouTubeMetadataResponse represents the response body for YouTube metadata extraction
+type YouTubeMetadataResponse struct {
+	VideoFile    []byte `json:"-"`
+	Title        string `json:"title"`
+	Description  string `json:"description"`
+	DurationSecs int    `json:"duration_secs"`
+}
+
 // CreatePodcastRequest represents the request body for creating a podcast
 type CreatePodcastRequest struct {
 	SourceURL   string                `json:"source_url,omitempty" form:"source_url" validate:"omitempty,required_without=File"`
