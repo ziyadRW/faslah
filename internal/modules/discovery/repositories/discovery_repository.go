@@ -77,3 +77,35 @@ func (dr *DiscoveryRepository) SearchPodcasts(query string, page, perPage int) (
 
 	return podcasts, totalCount, nil
 }
+
+// GetPopularPodcasts retrieves the top 10 podcasts by play count in the last 24 hours
+func (dr *DiscoveryRepository) GetPopularPodcasts() ([]map[string]interface{}, error) {
+	var results []map[string]interface{}
+
+	query := `
+		SELECT 
+			p.id, 
+			p.title, 
+			p.description, 
+			p.media_url, 
+			COUNT(wh.id) as play_count
+		FROM 
+			podcasts p
+		JOIN 
+			watch_histories wh ON p.id = wh.podcast_id
+		WHERE 
+			wh.last_played_at >= NOW() - INTERVAL '24 HOURS'
+			AND p.deleted_at IS NULL
+		GROUP BY 
+			p.id
+		ORDER BY 
+			play_count DESC
+		LIMIT 10
+	`
+
+	if err := dr.DB.Raw(query).Scan(&results).Error; err != nil {
+		return nil, err
+	}
+
+	return results, nil
+}
