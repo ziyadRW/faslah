@@ -2,6 +2,7 @@ package user
 
 import (
 	"github.com/labstack/echo/v4"
+	"github.com/ziyadrw/faslah/internal/middlewares"
 	userHandlers "github.com/ziyadrw/faslah/internal/modules/user/handlers"
 	userRepositories "github.com/ziyadrw/faslah/internal/modules/user/repositories"
 	userServices "github.com/ziyadrw/faslah/internal/modules/user/services"
@@ -17,4 +18,6 @@ func RegisterRoutes(e *echo.Echo, db *gorm.DB) {
 	usersRoutes.POST("/signup", userHandler.Signup)
 	usersRoutes.POST("/login", userHandler.Login)
 
+	authRoutes := usersRoutes.Group("/me", middlewares.RoleMiddleware(db))
+	authRoutes.GET("/profile", userHandler.GetProfile)
 }
