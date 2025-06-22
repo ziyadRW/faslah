@@ -16,7 +16,10 @@ func RoleMiddleware(db *gorm.DB, allowedRoles ...userEnums.Type) echo.Middleware
 	return func(next echo.HandlerFunc) echo.HandlerFunc {
 		return func(c echo.Context) error {
 			if config.GetEnv("APP_ENV", "") != "production" {
-				testingUserID := "78e13e52-6f12-45e1-be94-79986c94e5d8"
+				var testingUserID string
+				if err := db.Table("users").Select("id").Order("RANDOM()").Limit(1).Scan(&testingUserID).Error; err != nil {
+					return next(c)
+				}
 				c.Set("user_id", testingUserID)
 				return next(c)
 			}
