@@ -1,9 +1,7 @@
 .env
-/.idea
-.idea/
 .DS_Store
-/faslah.log
-main
 .idea/
+
 faslah
 faslah.log
+main
