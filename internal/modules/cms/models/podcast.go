@@ -1,4 +1,4 @@
-package podcast
+package cms
 
 import (
 	"github.com/ziyadrw/faslah/internal/base"

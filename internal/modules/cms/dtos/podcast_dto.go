@@ -1,7 +1,7 @@
-package podcast
+package cms
 
 import (
-	podcastModels "github.com/ziyadrw/faslah/internal/modules/podcast/models"
+	podcastModels "github.com/ziyadrw/faslah/internal/modules/cms/models"
 	"mime/multipart"
 	"time"
 )

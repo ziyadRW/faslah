@@ -1,10 +1,10 @@
-package podcast
+package cms
 
 import (
 	"github.com/labstack/echo/v4"
 	"github.com/ziyadrw/faslah/internal/base"
-	podcastDTOs "github.com/ziyadrw/faslah/internal/modules/podcast/dtos"
-	podcastServices "github.com/ziyadrw/faslah/internal/modules/podcast/services"
+	podcastDTOs "github.com/ziyadrw/faslah/internal/modules/cms/dtos"
+	podcastServices "github.com/ziyadrw/faslah/internal/modules/cms/services"
 )
 
 type PodcastHandler struct {
@@ -31,7 +31,7 @@ func NewPodcastHandler(podcastService *podcastServices.PodcastService) *PodcastH
 // @Param description formData string false "الوصف (مطلوب لرفع الملف، اختياري لرابط يوتيوب)"
 // @Param tags formData []string false "الوسوم (مطلوبة لرفع الملف، اختيارية لرابط يوتيوب)"
 // @Param published_at formData string false "تاريخ النشر (اختياري)"
-// @Success 200 {object} base.Response{data=podcastDTOs.CreatePodcastResponse} "تم إنشاء البودكاست بنجاح"
+// @Success 200 {object} base.Response{data=podcastDTOs.PodcastResponse} "تم إنشاء البودكاست بنجاح"
 // @Failure 400 {object} base.Response "خطأ في البيانات المدخلة"
 // @Failure 401 {object} base.Response "غير مصرح"
 // @Failure 500 {object} base.Response "خطأ في الخادم"
@@ -117,5 +117,22 @@ func (ph *PodcastHandler) UpdateContent(c echo.Context) error {
 func (ph *PodcastHandler) DeleteContent(c echo.Context) error {
 	id := c.Param("id")
 	response := ph.PodcastService.DeleteContent(id)
+	return c.JSON(response.HTTPStatus, response)
+}
+
+// MyContent godoc
+// @Summary الحصول على المحتوى الخاص بي
+// @Description استرجاع جميع البودكاست التي أنشأها المستخدم الحالي
+// @Tags إدارة المحتوى
+// @Accept json
+// @Produce json
+// @Security ApiKeyAuth
+// @Success 200 {object} base.Response{data=[]podcastDTOs.PodcastResponse} "تم استرجاع المحتوى الخاص بك بنجاح"
+// @Failure 401 {object} base.Response "غير مصرح"
+// @Failure 500 {object} base.Response "خطأ في الخادم"
+// @Router /cms/my-content [post]
+func (ph *PodcastHandler) MyContent(c echo.Context) error {
+	userID := c.Get("user_id").(string)
+	response := ph.PodcastService.GetMyContent(userID)
 	return c.JSON(response.HTTPStatus, response)
 }

@@ -1,4 +1,4 @@
-package podcast
+package cms
 
 import (
 	"bytes"
@@ -20,9 +20,9 @@ import (
 	"github.com/google/uuid"
 	"github.com/kkdai/youtube/v2"
 	"github.com/ziyadrw/faslah/internal/base"
-	podcastDTOs "github.com/ziyadrw/faslah/internal/modules/podcast/dtos"
-	podcastModels "github.com/ziyadrw/faslah/internal/modules/podcast/models"
-	podcast "github.com/ziyadrw/faslah/internal/modules/podcast/repositories"
+	podcastDTOs "github.com/ziyadrw/faslah/internal/modules/cms/dtos"
+	podcastModels "github.com/ziyadrw/faslah/internal/modules/cms/models"
+	podcast "github.com/ziyadrw/faslah/internal/modules/cms/repositories"
 )
 
 type PodcastService struct {
@@ -240,6 +240,21 @@ func (ps *PodcastService) DeleteContent(id string) base.Response {
 	}
 
 	return base.SetSuccessMessage("تم حذف البودكاست بنجاح")
+}
+
+// GetMyContent retrieves all podcasts created by the current user
+func (ps *PodcastService) GetMyContent(userID string) base.Response {
+	podcasts, err := ps.PodcastRepository.GetPodcastsByUserID(userID)
+	if err != nil {
+		return base.SetErrorMessage("خطأ في الخادم", err.Error())
+	}
+
+	var response []podcastDTOs.PodcastResponse
+	for _, podcast := range podcasts {
+		response = append(response, podcastDTOs.MapPodcastToDTO(&podcast))
+	}
+
+	return base.SetData(response, "تم استرجاع المحتوى الخاص بك بنجاح")
 }
 func (ps *PodcastService) UploadMedia(file []byte, filename string) base.Response {
 	uniqueFilename := fmt.Sprintf("%s_%s", uuid.New().String(), filename)

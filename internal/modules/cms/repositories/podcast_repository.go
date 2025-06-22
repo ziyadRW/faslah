@@ -1,9 +1,9 @@
-package podcast
+package cms
 
 import (
 	"errors"
 	"github.com/google/uuid"
-	podcastModels "github.com/ziyadrw/faslah/internal/modules/podcast/models"
+	podcastModels "github.com/ziyadrw/faslah/internal/modules/cms/models"
 	"gorm.io/gorm"
 )
 
@@ -43,4 +43,16 @@ func (pr *PodcastRepository) UpdatePodcast(podcast *podcastModels.Podcast) error
 // DeletePodcast soft-deletes a podcast from the database
 func (pr *PodcastRepository) DeletePodcast(id uuid.UUID) error {
 	return pr.DB.Delete(&podcastModels.Podcast{}, id).Error
+}
+
+// GetPodcastsByUserID retrieves all podcasts created by a specific user
+func (pr *PodcastRepository) GetPodcastsByUserID(userID string) ([]podcastModels.Podcast, error) {
+	var podcasts []podcastModels.Podcast
+
+	result := pr.DB.Where("user_id = ?", userID).Order("created_at DESC").Find(&podcasts)
+	if result.Error != nil {
+		return nil, result.Error
+	}
+
+	return podcasts, nil
 }
