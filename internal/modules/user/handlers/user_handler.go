@@ -1,6 +1,8 @@
 package user
 
 import (
+	"net/http"
+
 	"github.com/labstack/echo/v4"
 	"github.com/ziyadrw/faslah/internal/base"
 	userDTOs "github.com/ziyadrw/faslah/internal/modules/user/dtos"
@@ -75,5 +77,53 @@ func (uh *UserHandler) GetProfile(c echo.Context) error {
 	userID := c.Get("user_id").(string)
 
 	response := uh.UserService.GetProfile(userID)
+	return c.JSON(response.HTTPStatus, response)
+}
+
+// GetWatchHistory godoc
+// @Summary الحصول على سجل المشاهدة
+// @Description استرجاع سجل مشاهدة البودكاست للمستخدم الحالي
+// @Tags المستخدمين والمصادقة
+// @Accept json
+// @Produce json
+// @Security ApiKeyAuth
+// @Success 200 {object} base.Response{data=[]userDTOs.WatchHistoryResponse} "تم استرجاع سجل المشاهدة بنجاح"
+// @Failure 401 {object} base.Response "غير مصرح"
+// @Failure 500 {object} base.Response "خطأ في الخادم"
+// @Router /users/me/history [get]
+func (uh *UserHandler) GetWatchHistory(c echo.Context) error {
+	userID := c.Get("user_id").(string)
+
+	response := uh.UserService.GetWatchHistory(userID)
+	return c.JSON(response.HTTPStatus, response)
+}
+
+// TrackPlay godoc
+// @Summary تتبع تشغيل البودكاست
+// @Description تسجيل موضع التشغيل الحالي للبودكاست
+// @Tags تشغيل البودكاست
+// @Accept json
+// @Produce json
+// @Security ApiKeyAuth
+// @Param id path string true "معرف البودكاست"
+// @Param request body userDTOs.TrackPlayRequest true "بيانات التشغيل"
+// @Success 204 "تم تتبع التشغيل بنجاح"
+// @Failure 400 {object} base.Response "خطأ في البيانات المدخلة"
+// @Failure 401 {object} base.Response "غير مصرح"
+// @Failure 500 {object} base.Response "خطأ في الخادم"
+// @Router /podcasts/{id}/track-play [post]
+func (uh *UserHandler) TrackPlay(c echo.Context) error {
+	userID := c.Get("user_id").(string)
+	podcastID := c.Param("id")
+
+	var dto userDTOs.TrackPlayRequest
+	if res, ok := base.BindAndValidate(c, &dto); !ok {
+		return c.JSON(res.HTTPStatus, res)
+	}
+
+	response := uh.UserService.TrackPlay(userID, podcastID, dto)
+	if response.HTTPStatus == http.StatusOK {
+		return c.NoContent(http.StatusNoContent)
+	}
 	return c.JSON(response.HTTPStatus, response)
 }
