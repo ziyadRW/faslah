@@ -1,7 +1,7 @@
 package discovery
 
 import (
-	podcastModels "github.com/ziyadrw/faslah/internal/modules/podcast/models"
+	podcastModels "github.com/ziyadrw/faslah/internal/modules/cms/models"
 	"time"
 
 	"github.com/ziyadrw/faslah/internal/base"

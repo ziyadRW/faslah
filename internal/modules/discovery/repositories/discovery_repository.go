@@ -1,7 +1,7 @@
 package repositories
 
 import (
-	podcastModels "github.com/ziyadrw/faslah/internal/modules/podcast/models"
+	podcastModels "github.com/ziyadrw/faslah/internal/modules/cms/models"
 	"gorm.io/gorm"
 	"time"
 )
