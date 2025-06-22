@@ -1,16 +1,71 @@
 package podcast
 
 import (
+	podcastModels "github.com/ziyadrw/faslah/internal/modules/podcast/models"
+	"mime/multipart"
 	"time"
 )
 
+// CreateContentRequest represents the request body for creating a podcast
 type CreateContentRequest struct {
-	MediaURL  string `json:"media_url,omitempty"`  // For uploaded files (e.g. https://media.faslah.com/...)
-	SourceURL string `json:"source_url,omitempty"` // For YouTube or external links to be fetched
+	MediaURL  string `json:"media_url,omitempty" validate:"required_without=SourceURL" message:"يجب توفير رابط الوسائط أو رابط المصدر"`
+	SourceURL string `json:"source_url,omitempty" validate:"required_without=MediaURL" message:"يجب توفير رابط الوسائط أو رابط المصدر"`
 
-	Title        string     `json:"title,omitempty"`         // Optional: user can override extracted title
-	Description  string     `json:"description,omitempty"`   // Optional: user can override description
-	Tags         []string   `json:"tags,omitempty"`          // Optional: user-supplied tags
-	PublishedAt  *time.Time `json:"published_at,omitempty"`  // Optional: for scheduling or back-dated content
-	DurationSecs int        `json:"duration_secs,omitempty"` // Optional: can be auto-filled from file/YT
+	Title        string     `json:"title,omitempty"`
+	Description  string     `json:"description,omitempty"`
+	Tags         []string   `json:"tags,omitempty"`
+	PublishedAt  *time.Time `json:"published_at,omitempty"`
+	DurationSecs int        `json:"duration_secs,omitempty"`
+}
+
+// UpdateContentRequest represents the request body for updating a podcast
+type UpdateContentRequest struct {
+	Title        string     `json:"title,omitempty"`
+	Description  string     `json:"description,omitempty"`
+	Tags         []string   `json:"tags,omitempty"`
+	MediaURL     string     `json:"media_url,omitempty"`
+	SourceURL    string     `json:"source_url,omitempty"`
+	DurationSecs int        `json:"duration_secs,omitempty"`
+	PublishedAt  *time.Time `json:"published_at,omitempty"`
+}
+
+// PodcastResponse represents the response body for a podcast
+type PodcastResponse struct {
+	ID           string     `json:"id"`
+	UserID       string     `json:"user_id"`
+	Title        string     `json:"title"`
+	Description  string     `json:"description"`
+	Tags         []string   `json:"tags"`
+	MediaURL     string     `json:"media_url"`
+	SourceURL    string     `json:"source_url"`
+	DurationSecs int        `json:"duration_secs"`
+	PublishedAt  *time.Time `json:"published_at,omitempty"`
+	CreatedAt    time.Time  `json:"created_at"`
+	UpdatedAt    time.Time  `json:"updated_at"`
+}
+
+// CreatePodcastRequest represents the request body for creating a podcast
+type CreatePodcastRequest struct {
+	SourceURL   string                `json:"source_url,omitempty" form:"source_url" validate:"omitempty,required_without=File"`
+	File        *multipart.FileHeader `json:"-" form:"file" validate:"omitempty,required_without=SourceURL"`
+	Title       string                `json:"title,omitempty" form:"title" validate:"required_if=File.Filename .,omitempty"`
+	Description string                `json:"description,omitempty" form:"description" validate:"required_if=File.Filename .,omitempty"`
+	Tags        []string              `json:"tags,omitempty" form:"tags" validate:"required_if=File.Filename .,omitempty"`
+	PublishedAt *time.Time            `json:"published_at,omitempty" form:"published_at"`
+}
+
+func MapPodcastToDTO(podcast *podcastModels.Podcast) PodcastResponse {
+	return PodcastResponse{
+		ID:           podcast.ID.String(),
+		UserID:       podcast.UserID,
+		Title:        podcast.Title,
+		Description:  podcast.Description,
+		Tags:         podcast.Tags,
+		MediaURL:     podcast.MediaURL,
+		SourceURL:    podcast.SourceURL,
+		DurationSecs: podcast.DurationSecs,
+		PublishedAt:  podcast.PublishedAt,
+		CreatedAt:    podcast.CreatedAt,
+		UpdatedAt:    podcast.UpdatedAt,
+	}
 }
