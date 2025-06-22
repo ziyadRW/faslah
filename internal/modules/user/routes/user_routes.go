@@ -20,4 +20,8 @@ func RegisterRoutes(e *echo.Echo, db *gorm.DB) {
 
 	authRoutes := usersRoutes.Group("/me", middlewares.RoleMiddleware(db))
 	authRoutes.GET("/profile", userHandler.GetProfile)
+	authRoutes.GET("/history", userHandler.GetWatchHistory)
+
+	podcastRoutes := e.Group("/podcasts", middlewares.RoleMiddleware(db))
+	podcastRoutes.POST("/:id/track-play", userHandler.TrackPlay)
 }
