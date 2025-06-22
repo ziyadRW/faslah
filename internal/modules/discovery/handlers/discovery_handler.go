@@ -67,3 +67,17 @@ func (dh *DiscoveryHandler) SearchPodcasts(c echo.Context) error {
 	response := dh.DiscoveryService.SearchPodcasts(dto)
 	return c.JSON(response.HTTPStatus, response)
 }
+
+// GetPopularPodcasts godoc
+// @Summary البودكاست الشائعة
+// @Description استرجاع أكثر 10 بودكاست شعبية في آخر 24 ساعة
+// @Tags اكتشاف البودكاست
+// @Accept json
+// @Produce json
+// @Success 200 {object} base.Response{data=[]discoveryDTOs.PopularPodcastResponse} "تم استرجاع البودكاست الشائعة بنجاح"
+// @Failure 500 {object} base.Response "خطأ في الخادم"
+// @Router /discovery/popular [get]
+func (dh *DiscoveryHandler) GetPopularPodcasts(c echo.Context) error {
+	response := dh.DiscoveryService.GetPopularPodcasts()
+	return c.JSON(response.HTTPStatus, response)
+}
