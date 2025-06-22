@@ -17,12 +17,26 @@ func NewPodcastHandler(podcastService *podcastServices.PodcastService) *PodcastH
 	}
 }
 
-func (ph *PodcastHandler) CreateContent(c echo.Context) error {
-	var dto podcastDTOs.CreateContentRequest
+func (ph *PodcastHandler) GetContent(c echo.Context) error {
+	id := c.Param("id")
+	response := ph.PodcastService.GetContent(id)
+	return c.JSON(response.HTTPStatus, response)
+}
+
+func (ph *PodcastHandler) UpdateContent(c echo.Context) error {
+	id := c.Param("id")
+
+	var dto podcastDTOs.UpdateContentRequest
 	if res, ok := base.BindAndValidate(c, &dto); !ok {
 		return c.JSON(res.HTTPStatus, res)
 	}
 
-	response := ph.PodcastService.CreateContent(dto)
+	response := ph.PodcastService.UpdateContent(id, dto)
+	return c.JSON(response.HTTPStatus, response)
+}
+
+func (ph *PodcastHandler) DeleteContent(c echo.Context) error {
+	id := c.Param("id")
+	response := ph.PodcastService.DeleteContent(id)
 	return c.JSON(response.HTTPStatus, response)
 }
