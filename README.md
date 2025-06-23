@@ -21,6 +21,7 @@
 
 ## 🔊 فاصلة | واجهات برمجة خلفية Swagger UI
 - **توثيق API:** [Swagger / OpenAPI 3.0](http://faslah.org/swagger/index.html#/overview) - [عرض التوثيق الكامل](http://faslah.org/swagger/index.html#/)
+'http://faslah.org/swagger/index.html#/'
 
 ---
 
