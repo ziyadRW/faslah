@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"github.com/aws/aws-sdk-go-v2/feature/s3/manager"
 	podcastModels "github.com/ziyadrw/faslah/internal/modules/cms/models"
-	"io"
 	"log"
 	"net/http"
 	"os"
@@ -20,7 +19,6 @@ import (
 	"github.com/aws/aws-sdk-go-v2/credentials"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
 	"github.com/google/uuid"
-	"github.com/kkdai/youtube/v2"
 	"github.com/ziyadrw/faslah/internal/base"
 	podcastDTOs "github.com/ziyadrw/faslah/internal/modules/cms/dtos"
 	podcast "github.com/ziyadrw/faslah/internal/modules/cms/repositories"
@@ -307,86 +305,46 @@ func (ps *PodcastService) UploadMedia(file []byte, filename string) base.Respons
 }
 
 func (ps *PodcastService) FetchYouTube(youtubeURL string) base.Response {
-	ytClient := youtube.Client{}
-	video, err := ytClient.GetVideo(youtubeURL)
-	if err != nil {
-		return base.SetErrorMessage("فشل في الحصول على معلومات الفيديو", err.Error())
-	}
-
-	title := video.Title
-	description := video.Description
-	durationSecs := int(video.Duration.Seconds())
-
-	var videoFormat, audioFormat *youtube.Format
-
-	for _, f := range video.Formats {
-		if strings.HasPrefix(f.MimeType, "video/mp4") {
-			videoFormat = &f
-			break
-		}
-	}
-
-	for _, f := range video.Formats {
-		if f.ItagNo == 140 {
-			audioFormat = &f
-			break
-		}
-	}
-	if audioFormat == nil {
-		for _, f := range video.Formats {
-			if strings.HasPrefix(f.MimeType, "audio/") {
-				audioFormat = &f
-				break
-			}
-		}
-	}
-
-	if videoFormat == nil || audioFormat == nil {
-		return base.SetErrorMessage("لم يتم العثور على تنسيقات مناسبة", "")
-	}
-
 	tempDir := os.TempDir()
-	videoPath := filepath.Join(tempDir, "video.mp4")
-	audioPath := filepath.Join(tempDir, "audio.m4a")
-	mergedPath := filepath.Join(tempDir, "merged_output.mp4")
+	outputPath := filepath.Join(tempDir, "youtube_output.mp4")
 
-	videoStream, _, err := ytClient.GetStream(video, videoFormat)
+	cmd := exec.Command("yt-dlp",
+		"--cookies", os.ExpandEnv("$HOME/cookies.txt"),
+		"-f", "bestvideo[ext=mp4]+bestaudio[ext=m4a]",
+		"--merge-output-format", "mp4",
+		"-o", outputPath,
+		youtubeURL,
+	)
+
+	output, err := cmd.CombinedOutput()
 	if err != nil {
+		log.Printf("❌ yt-dlp error: %s", string(output))
 		return base.SetErrorMessage("فشل تحميل الفيديو", err.Error())
 	}
-	videoBytes, err := io.ReadAll(videoStream)
+
+	metadataCmd := exec.Command("yt-dlp",
+		"--cookies", os.ExpandEnv("$HOME/cookies.txt"),
+		"--print", "%(title)s\n%(description)s\n%(duration)s",
+		youtubeURL,
+	)
+	metaOutput, err := metadataCmd.Output()
 	if err != nil {
-		return base.SetErrorMessage("فشل قراءة بيانات الفيديو", err.Error())
+		return base.SetErrorMessage("فشل الحصول على بيانات الفيديو", err.Error())
 	}
-	if err := os.WriteFile(videoPath, videoBytes, 0644); err != nil {
-		return base.SetErrorMessage("فشل حفظ الفيديو", err.Error())
+	metaParts := strings.SplitN(string(metaOutput), "\n", 3)
+	if len(metaParts) < 3 {
+		return base.SetErrorMessage("البيانات المسترجعة غير مكتملة", "")
 	}
 
-	audioStream, _, err := ytClient.GetStream(video, audioFormat)
-	if err != nil {
-		return base.SetErrorMessage("فشل تحميل الصوت", err.Error())
-	}
-	audioBytes, err := io.ReadAll(audioStream)
-	if err != nil {
-		return base.SetErrorMessage("فشل قراءة بيانات الصوت", err.Error())
-	}
-	if err := os.WriteFile(audioPath, audioBytes, 0644); err != nil {
-		return base.SetErrorMessage("فشل حفظ الصوت", err.Error())
-	}
+	title := strings.TrimSpace(metaParts[0])
+	description := strings.TrimSpace(metaParts[1])
+	durationSecs, _ := strconv.Atoi(strings.TrimSpace(metaParts[2]))
 
-	cmd := exec.Command("ffmpeg", "-y", "-i", videoPath, "-i", audioPath, "-c", "copy", mergedPath)
-	if err := cmd.Run(); err != nil {
-		return base.SetErrorMessage("فشل دمج الفيديو مع الصوت", err.Error())
-	}
-
-	mergedData, err := os.ReadFile(mergedPath)
+	mergedData, err := os.ReadFile(outputPath)
 	if err != nil {
-		return base.SetErrorMessage("فشل قراءة الفيديو المدمج", err.Error())
+		return base.SetErrorMessage("فشل قراءة الفيديو المحمّل", err.Error())
 	}
-
-	_ = os.Remove(videoPath)
-	_ = os.Remove(audioPath)
-	_ = os.Remove(mergedPath)
+	_ = os.Remove(outputPath)
 
 	response := podcastDTOs.YouTubeMetadataResponse{
 		VideoFile:    mergedData,
