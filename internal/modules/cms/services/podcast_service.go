@@ -4,6 +4,8 @@ import (
 	"bytes"
 	"context"
 	"fmt"
+	"github.com/aws/aws-sdk-go-v2/feature/s3/manager"
+	podcastModels "github.com/ziyadrw/faslah/internal/modules/cms/models"
 	"io"
 	"log"
 	"net/http"
@@ -21,7 +23,6 @@ import (
 	"github.com/kkdai/youtube/v2"
 	"github.com/ziyadrw/faslah/internal/base"
 	podcastDTOs "github.com/ziyadrw/faslah/internal/modules/cms/dtos"
-	podcastModels "github.com/ziyadrw/faslah/internal/modules/cms/models"
 	podcast "github.com/ziyadrw/faslah/internal/modules/cms/repositories"
 )
 
@@ -256,14 +257,15 @@ func (ps *PodcastService) GetMyContent(userID string) base.Response {
 
 	return base.SetData(response, "تم استرجاع المحتوى الخاص بك بنجاح")
 }
+
 func (ps *PodcastService) UploadMedia(file []byte, filename string) base.Response {
 	uniqueFilename := fmt.Sprintf("%s_%s", uuid.New().String(), filename)
 
 	accessKeyID := os.Getenv("R2_ACCESS_KEY_ID")
 	secretAccessKey := os.Getenv("R2_SECRET_ACCESS_KEY")
 	bucketName := os.Getenv("R2_BUCKET_NAME")
-	bucketCode := os.Getenv("R2_BUCKET_CODE")
 	r2Endpoint := os.Getenv("R2_ENDPOINT_URL")
+	mediaDomain := os.Getenv("MEDIA_DOMAIN")
 
 	customResolver := aws.EndpointResolverWithOptionsFunc(func(service, region string, options ...interface{}) (aws.Endpoint, error) {
 		return aws.Endpoint{
@@ -281,7 +283,12 @@ func (ps *PodcastService) UploadMedia(file []byte, filename string) base.Respons
 		return base.SetErrorMessage("فشل في تهيئة خدمة التخزين", err.Error())
 	}
 	s3Client := s3.NewFromConfig(cfg)
-	_, err = s3Client.PutObject(context.TODO(), &s3.PutObjectInput{
+
+	uploader := manager.NewUploader(s3Client, func(u *manager.Uploader) {
+		u.PartSize = 10 * 1024 * 1024
+		u.Concurrency = 2
+	})
+	_, err = uploader.Upload(context.TODO(), &s3.PutObjectInput{
 		Bucket:      aws.String(bucketName),
 		Key:         aws.String(uniqueFilename),
 		Body:        bytes.NewReader(file),
@@ -290,8 +297,8 @@ func (ps *PodcastService) UploadMedia(file []byte, filename string) base.Respons
 	if err != nil {
 		return base.SetErrorMessage("فشل في رفع الملف", err.Error())
 	}
-	mediaURL := fmt.Sprintf("https://pub-%s.r2.dev/%s", bucketCode, uniqueFilename)
-	log.Println(mediaURL)
+	mediaURL := fmt.Sprintf("https://%s/%s", mediaDomain, uniqueFilename)
+
 	response := podcastDTOs.MediaUploadResponse{
 		MediaURL: mediaURL,
 	}
@@ -301,7 +308,6 @@ func (ps *PodcastService) UploadMedia(file []byte, filename string) base.Respons
 
 func (ps *PodcastService) FetchYouTube(youtubeURL string) base.Response {
 	ytClient := youtube.Client{}
-
 	video, err := ytClient.GetVideo(youtubeURL)
 	if err != nil {
 		return base.SetErrorMessage("فشل في الحصول على معلومات الفيديو", err.Error())
@@ -336,7 +342,6 @@ func (ps *PodcastService) FetchYouTube(youtubeURL string) base.Response {
 	}
 
 	if videoFormat == nil || audioFormat == nil {
-		log.Println("Available formats:", video.Formats)
 		return base.SetErrorMessage("لم يتم العثور على تنسيقات مناسبة", "")
 	}
 
