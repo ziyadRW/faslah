@@ -185,6 +185,75 @@
                 }
             }
         },
+        "/cms/fetch-youtube-content": {
+            "post": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "استخراج العنوان والوصف ومدة فيديو يوتيوب بدون تنزيل الفيديو",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "أ-استخراج بيانات يوتيوب"
+                ],
+                "summary": "استخراج بيانات فيديو يوتيوب",
+                "parameters": [
+                    {
+                        "description": "بيانات طلب استخراج بيانات يوتيوب",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/github_com_ziyadrw_faslah_internal_modules_cms_dtos.FetchYouTubeRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "تم استخراج بيانات الفيديو بنجاح",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/github_com_ziyadrw_faslah_internal_base.Response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/github_com_ziyadrw_faslah_internal_modules_cms_dtos.YouTubeMetadataResponse"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "خطأ في البيانات المدخلة",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_ziyadrw_faslah_internal_base.Response"
+                        }
+                    },
+                    "401": {
+                        "description": "غير مصرح",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_ziyadrw_faslah_internal_base.Response"
+                        }
+                    },
+                    "500": {
+                        "description": "خطأ في الخادم",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_ziyadrw_faslah_internal_base.Response"
+                        }
+                    }
+                }
+            }
+        },
         "/cms/my-content": {
             "post": {
                 "security": [
@@ -857,6 +926,254 @@
                     }
                 }
             }
+        }
+    },
+    "definitions": {
+        "github_com_ziyadrw_faslah_internal_base.Response": {
+            "type": "object",
+            "properties": {
+                "data": {},
+                "errors": {},
+                "message_description": {
+                    "type": "string"
+                },
+                "message_title": {
+                    "type": "string"
+                },
+                "message_type": {
+                    "type": "string"
+                }
+            }
+        },
+        "github_com_ziyadrw_faslah_internal_modules_cms_dtos.FetchYouTubeRequest": {
+            "type": "object",
+            "required": [
+                "youtube_url"
+            ],
+            "properties": {
+                "youtube_url": {
+                    "type": "string"
+                }
+            }
+        },
+        "github_com_ziyadrw_faslah_internal_modules_cms_dtos.PodcastResponse": {
+            "type": "object",
+            "properties": {
+                "created_at": {
+                    "type": "string"
+                },
+                "description": {
+                    "type": "string"
+                },
+                "duration_secs": {
+                    "type": "integer"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "media_url": {
+                    "type": "string"
+                },
+                "published_at": {
+                    "type": "string"
+                },
+                "source_url": {
+                    "type": "string"
+                },
+                "tags": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "title": {
+                    "type": "string"
+                },
+                "updated_at": {
+                    "type": "string"
+                },
+                "user_id": {
+                    "type": "string"
+                }
+            }
+        },
+        "github_com_ziyadrw_faslah_internal_modules_cms_dtos.UpdateContentRequest": {
+            "type": "object",
+            "properties": {
+                "description": {
+                    "type": "string"
+                },
+                "duration_secs": {
+                    "type": "integer"
+                },
+                "media_url": {
+                    "type": "string"
+                },
+                "published_at": {
+                    "type": "string"
+                },
+                "source_url": {
+                    "type": "string"
+                },
+                "tags": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "title": {
+                    "type": "string"
+                }
+            }
+        },
+        "github_com_ziyadrw_faslah_internal_modules_cms_dtos.YouTubeMetadataResponse": {
+            "type": "object",
+            "properties": {
+                "description": {
+                    "type": "string"
+                },
+                "duration_secs": {
+                    "type": "integer"
+                },
+                "title": {
+                    "type": "string"
+                }
+            }
+        },
+        "github_com_ziyadrw_faslah_internal_modules_discovery_dtos.PopularPodcastResponse": {
+            "type": "object",
+            "properties": {
+                "description": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "media_url": {
+                    "type": "string"
+                },
+                "play_count": {
+                    "type": "integer"
+                },
+                "title": {
+                    "type": "string"
+                }
+            }
+        },
+        "github_com_ziyadrw_faslah_internal_modules_user_dtos.AuthResponse": {
+            "type": "object",
+            "properties": {
+                "token": {
+                    "type": "string"
+                },
+                "user": {
+                    "$ref": "#/definitions/github_com_ziyadrw_faslah_internal_modules_user_dtos.UserResponse"
+                }
+            }
+        },
+        "github_com_ziyadrw_faslah_internal_modules_user_dtos.LoginRequest": {
+            "type": "object",
+            "required": [
+                "email",
+                "password"
+            ],
+            "properties": {
+                "email": {
+                    "type": "string"
+                },
+                "password": {
+                    "type": "string"
+                }
+            }
+        },
+        "github_com_ziyadrw_faslah_internal_modules_user_dtos.SignupRequest": {
+            "type": "object",
+            "required": [
+                "email",
+                "name",
+                "password"
+            ],
+            "properties": {
+                "email": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "password": {
+                    "type": "string"
+                },
+                "role": {
+                    "enum": [
+                        "viewer",
+                        "creator"
+                    ],
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/github_com_ziyadrw_faslah_internal_modules_user_enums.Type"
+                        }
+                    ]
+                }
+            }
+        },
+        "github_com_ziyadrw_faslah_internal_modules_user_dtos.TrackPlayRequest": {
+            "type": "object",
+            "required": [
+                "playback_second"
+            ],
+            "properties": {
+                "playback_second": {
+                    "type": "integer",
+                    "minimum": 0
+                }
+            }
+        },
+        "github_com_ziyadrw_faslah_internal_modules_user_dtos.UserResponse": {
+            "type": "object",
+            "properties": {
+                "created_at": {
+                    "type": "string"
+                },
+                "email": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "role": {
+                    "$ref": "#/definitions/github_com_ziyadrw_faslah_internal_modules_user_enums.Type"
+                }
+            }
+        },
+        "github_com_ziyadrw_faslah_internal_modules_user_dtos.WatchHistoryResponse": {
+            "type": "object",
+            "properties": {
+                "last_played_at": {
+                    "type": "string"
+                },
+                "playback_second": {
+                    "type": "integer"
+                },
+                "podcast_id": {
+                    "type": "string"
+                }
+            }
+        },
+        "github_com_ziyadrw_faslah_internal_modules_user_enums.Type": {
+            "type": "string",
+            "enum": [
+                "creator",
+                "viewer",
+                "admin"
+            ],
+            "x-enum-varnames": [
+                "TypeCreator",
+                "TypeViewer",
+                "TypeAdmin"
+            ]
         }
     },
     "securityDefinitions": {

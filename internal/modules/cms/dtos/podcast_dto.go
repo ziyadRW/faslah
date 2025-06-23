@@ -57,6 +57,11 @@ type YouTubeMetadataResponse struct {
 	DurationSecs int    `json:"duration_secs"`
 }
 
+// FetchYouTubeRequest represents the request body for fetching YouTube metadata
+type FetchYouTubeRequest struct {
+	YoutubeURL string `json:"youtube_url" form:"youtube_url" validate:"required" message:"يجب توفير رابط يوتيوب"`
+}
+
 // CreatePodcastRequest represents the request body for creating a podcast
 type CreatePodcastRequest struct {
 	SourceURL   string                `json:"source_url,omitempty" form:"source_url" validate:"omitempty,required_without=File"`

@@ -11,7 +11,7 @@ const docTemplate = `{
         "title": "{{.Title}}",
         "termsOfService": "http://swagger.io/terms/",
         "contact": {
-            "name": "فاصلة",
+            "name": "فريق دعم فاصلة",
             "url": "https://github.com/ziyadrw/faslah",
             "email": "zeadAlrouasheed@gmail.com"
         },
@@ -175,6 +175,75 @@ const docTemplate = `{
                     },
                     "404": {
                         "description": "البودكاست غير موجود",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_ziyadrw_faslah_internal_base.Response"
+                        }
+                    },
+                    "500": {
+                        "description": "خطأ في الخادم",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_ziyadrw_faslah_internal_base.Response"
+                        }
+                    }
+                }
+            }
+        },
+        "/cms/fetch-youtube-content": {
+            "post": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "استخراج العنوان والوصف ومدة فيديو يوتيوب بدون تنزيل الفيديو",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "أ-استخراج بيانات يوتيوب"
+                ],
+                "summary": "استخراج بيانات فيديو يوتيوب",
+                "parameters": [
+                    {
+                        "description": "بيانات طلب استخراج بيانات يوتيوب",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/github_com_ziyadrw_faslah_internal_modules_cms_dtos.FetchYouTubeRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "تم استخراج بيانات الفيديو بنجاح",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/github_com_ziyadrw_faslah_internal_base.Response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/github_com_ziyadrw_faslah_internal_modules_cms_dtos.YouTubeMetadataResponse"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "خطأ في البيانات المدخلة",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_ziyadrw_faslah_internal_base.Response"
+                        }
+                    },
+                    "401": {
+                        "description": "غير مصرح",
                         "schema": {
                             "$ref": "#/definitions/github_com_ziyadrw_faslah_internal_base.Response"
                         }
@@ -879,6 +948,17 @@ const docTemplate = `{
                 }
             }
         },
+        "github_com_ziyadrw_faslah_internal_modules_cms_dtos.FetchYouTubeRequest": {
+            "type": "object",
+            "required": [
+                "youtube_url"
+            ],
+            "properties": {
+                "youtube_url": {
+                    "type": "string"
+                }
+            }
+        },
         "github_com_ziyadrw_faslah_internal_modules_cms_dtos.PodcastResponse": {
             "type": "object",
             "properties": {
@@ -943,6 +1023,20 @@ const docTemplate = `{
                     "items": {
                         "type": "string"
                     }
+                },
+                "title": {
+                    "type": "string"
+                }
+            }
+        },
+        "github_com_ziyadrw_faslah_internal_modules_cms_dtos.YouTubeMetadataResponse": {
+            "type": "object",
+            "properties": {
+                "description": {
+                    "type": "string"
+                },
+                "duration_secs": {
+                    "type": "integer"
                 },
                 "title": {
                     "type": "string"

@@ -11,6 +11,13 @@ definitions:
       message_type:
         type: string
     type: object
+  github_com_ziyadrw_faslah_internal_modules_cms_dtos.FetchYouTubeRequest:
+    properties:
+      youtube_url:
+        type: string
+    required:
+    - youtube_url
+    type: object
   github_com_ziyadrw_faslah_internal_modules_cms_dtos.PodcastResponse:
     properties:
       created_at:
@@ -54,6 +61,15 @@ definitions:
         items:
           type: string
         type: array
+      title:
+        type: string
+    type: object
+  github_com_ziyadrw_faslah_internal_modules_cms_dtos.YouTubeMetadataResponse:
+    properties:
+      description:
+        type: string
+      duration_secs:
+        type: integer
       title:
         type: string
     type: object
@@ -271,6 +287,47 @@ paths:
       summary: حذف محتوى
       tags:
       - إدارة المحتوى
+  /cms/fetch-youtube-content:
+    post:
+      consumes:
+      - application/json
+      description: استخراج العنوان والوصف ومدة فيديو يوتيوب بدون تنزيل الفيديو
+      parameters:
+      - description: بيانات طلب استخراج بيانات يوتيوب
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/github_com_ziyadrw_faslah_internal_modules_cms_dtos.FetchYouTubeRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: تم استخراج بيانات الفيديو بنجاح
+          schema:
+            allOf:
+            - $ref: '#/definitions/github_com_ziyadrw_faslah_internal_base.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/github_com_ziyadrw_faslah_internal_modules_cms_dtos.YouTubeMetadataResponse'
+              type: object
+        "400":
+          description: خطأ في البيانات المدخلة
+          schema:
+            $ref: '#/definitions/github_com_ziyadrw_faslah_internal_base.Response'
+        "401":
+          description: غير مصرح
+          schema:
+            $ref: '#/definitions/github_com_ziyadrw_faslah_internal_base.Response'
+        "500":
+          description: خطأ في الخادم
+          schema:
+            $ref: '#/definitions/github_com_ziyadrw_faslah_internal_base.Response'
+      security:
+      - ApiKeyAuth: []
+      summary: استخراج بيانات فيديو يوتيوب
+      tags:
+      - أ-استخراج بيانات يوتيوب
   /cms/my-content:
     post:
       consumes:

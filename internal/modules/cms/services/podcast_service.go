@@ -356,6 +356,35 @@ func (ps *PodcastService) FetchYouTube(youtubeURL string) base.Response {
 	return base.SetData(response, "تم جلب الفيديو بنجاح")
 }
 
+// FetchYouTubeMetaData fetches only the metadata (title, description, duration) from a YouTube video
+func (ps *PodcastService) FetchYouTubeMetaData(youtubeURL string) base.Response {
+	metadataCmd := exec.Command("yt-dlp",
+		"--cookies", os.ExpandEnv("$HOME/cookies.txt"),
+		"--print", "%(title)s\n%(description)s\n%(duration)s",
+		youtubeURL,
+	)
+	metaOutput, err := metadataCmd.Output()
+	if err != nil {
+		return base.SetErrorMessage("فشل الحصول على بيانات الفيديو", err.Error())
+	}
+	metaParts := strings.SplitN(string(metaOutput), "\n", 3)
+	if len(metaParts) < 3 {
+		return base.SetErrorMessage("البيانات المسترجعة غير مكتملة", "")
+	}
+
+	title := strings.TrimSpace(metaParts[0])
+	description := strings.TrimSpace(metaParts[1])
+	durationSecs, _ := strconv.Atoi(strings.TrimSpace(metaParts[2]))
+
+	response := podcastDTOs.YouTubeMetadataResponse{
+		Title:        title,
+		Description:  description,
+		DurationSecs: durationSecs,
+	}
+
+	return base.SetData(response, "تم جلب بيانات الفيديو بنجاح")
+}
+
 // GetVideoDuration extracts the duration in seconds from a video file using ffmpeg.
 func (ps *PodcastService) GetVideoDuration(fileContent []byte) (int, error) {
 	tempDir := os.TempDir()

@@ -21,4 +21,5 @@ func RegisterRoutes(e *echo.Echo, db *gorm.DB) {
 	cmsGroup.GET("/retreive-content/:id", podcastHandler.GetContent)
 	cmsGroup.PUT("/update-content/:id", podcastHandler.UpdateContent)
 	cmsGroup.DELETE("/delete-content/:id", podcastHandler.DeleteContent)
+	cmsGroup.POST("/fetch-youtube-content", podcastHandler.FetchFromYouTube)
 }

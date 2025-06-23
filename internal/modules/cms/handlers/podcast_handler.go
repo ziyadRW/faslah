@@ -136,3 +136,27 @@ func (ph *PodcastHandler) MyContent(c echo.Context) error {
 	response := ph.PodcastService.GetMyContent(userID)
 	return c.JSON(response.HTTPStatus, response)
 }
+
+// FetchFromYouTube godoc
+// @Summary استخراج بيانات فيديو يوتيوب
+// @Description استخراج العنوان والوصف ومدة فيديو يوتيوب بدون تنزيل الفيديو
+// @Tags أ-استخراج بيانات يوتيوب
+// @Accept json
+// @Produce json
+// @Security ApiKeyAuth
+// @Param request body podcastDTOs.FetchYouTubeRequest true "بيانات طلب استخراج بيانات يوتيوب"
+// @Success 200 {object} base.Response{data=podcastDTOs.YouTubeMetadataResponse} "تم استخراج بيانات الفيديو بنجاح"
+// @Failure 400 {object} base.Response "خطأ في البيانات المدخلة"
+// @Failure 401 {object} base.Response "غير مصرح"
+// @Failure 500 {object} base.Response "خطأ في الخادم"
+// @Router /cms/fetch-youtube-content [post]
+func (ph *PodcastHandler) FetchFromYouTube(c echo.Context) error {
+	var dto podcastDTOs.FetchYouTubeRequest
+	if res, ok := base.BindAndValidate(c, &dto); !ok {
+		return c.JSON(res.HTTPStatus, res)
+	}
+
+	response := ph.PodcastService.FetchYouTubeMetaData(dto.YoutubeURL)
+
+	return c.JSON(response.HTTPStatus, response)
+}
